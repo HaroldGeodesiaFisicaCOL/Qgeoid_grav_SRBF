@@ -37,4 +37,5 @@ Feel free to contact the authors:
 * Carlos Rico Acevedo, at caarlosrico@gmail.com.
 
 # Citing
+if you use `Qgeoid_grav_SRBF`, please cite the following paper:
 * Olarte, H. S. (2025). Estimación de un modelo micro-cuasigeoidal mediante el modelamiento del campo de gravedad local para la incorporación de la primera estación de Colombia en el IHRF. Recuperado de: http://hdl.handle.net/11349/100030
