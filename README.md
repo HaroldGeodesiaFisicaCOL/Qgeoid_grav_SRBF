@@ -29,6 +29,7 @@ The documentation can be found in:
 
 # Dependencies
 - Graflab, MATLAB script for the syntesis of the spherical harmonics. Bucha, B., Janák, J., 2013. A MATLAB-based graphical user interface program for computing functionals of the geopotential up to ultra-high degrees and orders. Computers & Geosciences 56, 186-196, https://doi.org/10.1016/j.cageo.2013.03.012
+- GMT6 (Generic Mapping Tools), GMT 6: Wessel, P., Luis, J. F., Uieda, L., Scharroo, R., Wobbe, F., Smith, W. H. F., & Tian, D. (2019). The Generic Mapping Tools Version 6. Geochemistry, Geophysics, Geosystems, 20(11), 5556–5564. https://doi.org/10.1029/2019GC008515, https://www.generic-mapping-tools.org/
 
 # Contact
 Feel free to contact the authors: 
