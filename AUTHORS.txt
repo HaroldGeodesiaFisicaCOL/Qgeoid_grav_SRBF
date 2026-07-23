@@ -1,0 +1,5 @@
+Authors of Qgeoid_grav_SRBF:
+
+Harold Olarte Ramírez <geodesiafisica2208@gmail.com>
+Carlos Rico Acevedo   <caarlosrico@gmail.com>
+
