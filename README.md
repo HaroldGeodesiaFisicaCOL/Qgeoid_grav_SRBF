@@ -27,6 +27,9 @@ The documentation can be found in:
 - Theorical aspects, [docs/Qgeoid_grav_SRBF.pdf](docs/Qgeoid_grav_SRBF.pdf)
 - Example of aplication (Results), [docs\Technical_Report_QgeoidMEDE2026.pdf](docs\Technical_Report_QgeoidMEDE2026.pdf)
 
+# Dependencies
+- Graflab, MATLAB script for the syntesis of the spherical harmonics. Bucha, B., Janák, J., 2013. A MATLAB-based graphical user interface program for computing functionals of the geopotential up to ultra-high degrees and orders. Computers & Geosciences 56, 186-196, https://doi.org/10.1016/j.cageo.2013.03.012
+
 # Contact
 Feel free to contact the authors: 
 * Harold Olarte Ramírez, at geodesiafisica2208@gmail.com.
