@@ -8,7 +8,7 @@
 - Dowloand the grid model of the topografic gravitational effects of the model ERTM2190 in .tif format.
 
 ### SRBF gravity field refinement
-- $N_{max}_i$ Kernel of SRBFs expansion.
+- $Nmax_i$ Kernel of SRBFs expansion.
 - Construction of the $y = Ad$ system of equations.
 - Analysis step (Estimation of parameters) using SRBFs with VCE-based regularization.
 - Analysis step (Estimation of parameters) using SRBFs with VCE-based regularization and Tikhonov parameter optimization.
