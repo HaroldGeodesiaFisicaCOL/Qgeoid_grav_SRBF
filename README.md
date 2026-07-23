@@ -9,6 +9,7 @@
 
 ### SRBF gravity field refinement
 - $Nmax_i$ Kernel of SRBFs expansion.
+- Uses the Shannon band pass filter for the terrestrial data and Cup (Cubic polynomial) for the Aerogravimetric data.
 - Construction of the $y = Ad$ system of equations.
 - Analysis step (Estimation of parameters) using SRBFs with VCE-based regularization.
 - Analysis step (Estimation of parameters) using SRBFs with VCE-based regularization and Tikhonov parameter optimization.
