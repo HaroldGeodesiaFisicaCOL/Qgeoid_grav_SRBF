@@ -15,6 +15,11 @@
 - Sintesys step (Estimation of residual perturbance potential) using SRBF's and system $y = B \hat{d}$.
 - Restore procedure to determine the Qgeoid model and the standart deviation.
 
+### Results visualization
+- Visualization of the estimated parameters and the standard deviation.
+- Visualization of the significant parameters.
+- Visualization of the estimated residual perturbance potential and the standard deviation.
+- Visualization of the estimated Qgeoid model and the standard deviation.
 
 # Documentation
 The documentation can be found in: 
