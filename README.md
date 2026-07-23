@@ -24,7 +24,7 @@
 # Documentation
 The documentation can be found in: 
 - Theorical aspects, [docs/Qgeoid_grav_SRBF.pdf](docs/Qgeoid_grav_SRBF.pdf)
-- Example of aplication (Results), [docs/QgeoidMEDE2026_Technical_Report.pdf](docs/QgeoidMEDE2026_Technical_Report.pdf)
+- Example of aplication (Results), [docs\Technical_Report_QgeoidMEDE2026.pdf](docs\Technical_Report_QgeoidMEDE2026.pdf)
 
 # Contact
 Feel free to contact the authors: 
