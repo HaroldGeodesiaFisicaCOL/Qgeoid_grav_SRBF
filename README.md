@@ -1,13 +1,25 @@
 # Introduction Qgeoid_grav_SRBF
 `Qgeoid_grav_SRBF` is a Python package for regional gravity field refinement using Spherical Radial Basis Functions (SRBFs). Features VCE-based regularization of the system of equations and optional Tikhonov parameter optimization via the L-curve criterion for stable and accurate quasigeoid/gravity field modeling.
 
-## Features
+## Features for modules
+### Download of the geopotential models 
 - Dowloand the spherical harmonics coefficients from the ICGEM website of the geopotential model in .gfc format.
-- Dowloand the spherical harmonics coefficients from the ICGEM website of the topografic gravitational effects model in .gfc format (dv_ell_Earth2014).
+- Dowloand the spherical harmonics coefficients from the ICGEM website of the topographic gravitational effects model (dv_ell_Earth2014) in .gfc format.
 - Dowloand the grid model of the topografic gravitational effects of the model ERTM2190 in .tif format.
 
+### SRBF gravity field refinement
+- $N_{max}_i$ Kernel of SRBFs expansion.
+- Construction of the $y = Ad$ system of equations.
+- Analysis step (Estimation of parameters) using SRBFs with VCE-based regularization.
+- Analysis step (Estimation of parameters) using SRBFs with VCE-based regularization and Tikhonov parameter optimization.
+- Sintesys step (Estimation of residual perturbance potential) using SRBF's and system $y = B \hat{d}$.
+- Restore procedure to determine the Qgeoid model and the standart deviation.
+
+
 # Documentation
-The documentation can be found in [docs/Qgeoid_grav_SRBF.pdf](docs/Qgeoid_grav_SRBF.pdf)
+The documentation can be found in: 
+- Theorical aspects, [docs/Qgeoid_grav_SRBF.pdf](docs/Qgeoid_grav_SRBF.pdf)
+- Example of aplication (Results), [docs/QgeoidMEDE2026_Technical_Report.pdf](docs/QgeoidMEDE2026_Technical_Report.pdf)
 
 # Contact
 Feel free to contact the authors: 
