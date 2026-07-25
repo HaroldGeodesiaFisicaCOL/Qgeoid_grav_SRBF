@@ -112,4 +112,3 @@ echo   gmt --version
 echo   gswin64c --version
 echo   python -c "import pygmt; pygmt.show_versions()"
 echo ===============================================
-pause
