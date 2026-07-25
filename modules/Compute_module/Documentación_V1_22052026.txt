@@ -1,0 +1,667 @@
+14-07-2026: El pipeline principal es el Pipeline_14072026.py,este contiene más comandos de "force" lo cual permite calcular pasos específicos.
+
+Anteriormente no se guardaban los residuales generados por el parámetro óptimo del LC, se ha corregido este error. 
+Se corrigió el error de la distribución de los pixeles para generar el raster, esto se debía a que se copiaba el archivo de "raster_puntos_centrales" en un float menor que el generaba en la iteración. 
+
+================================================================================
+                  LISTADO DE CLAVES DE FORZADO EN EL PIPELINE
+================================================================================
+
+El pipeline dispone de tres modos de forzado:
+  --force-mode none   : no se fuerza ningún paso (se respetan las comprobaciones de existencia).
+  --force-mode all    : se fuerzan TODOS los pasos (se recalcula todo).
+  --force-mode steps  : se fuerzan únicamente los pasos cuyas claves se enumeren en --force-steps.
+
+Las claves se agrupan en dos categorías: pasos globales (compartidos por todas las frecuencias) y pasos por caso (específicos de cada combinación de frecuencia y caso).
+
+--------------------------------------------------------------------------------
+1. PASOS GLOBALES (se ejecutan una vez por frecuencia)
+--------------------------------------------------------------------------------
+
+  Clave: restore_pixel
+  Descripción:
+    Fuerza la regeneración de la malla de píxeles y la interpolación de los modelos
+    base (SRTM, EGM2008, GGM, Topo) sobre esos píxeles. También ejecuta la expansión
+    de armónicos esféricos con GravLab.
+  Scripts involucrados:
+    - generador_pixel.py
+    - interpolado_modelos_pixeles.py
+    - GravLab_expand.py
+  Archivos de salida (en 6_Resultados/Restore_Pixel/):
+    - raster_puntos_centrales.txt
+    - XGM2019_0_719
+    - dv_ell_earth2014_0_719
+    - dv_ell_earth2014_0_2159
+    - puntos_centrales_matlab.txt
+
+  Clave: common
+  Descripción:
+    Fuerza la ejecución de todos los pasos comunes a una frecuencia:
+      - Generación de la malla de Reuter (ReuterGrid.py)
+      - Construcción de las tres matrices de diseño:
+          * matriz_diseno (observaciones terrestres)
+          * matriz_diseno_aero (observaciones aéreas)
+          * matriz_pixel (píxeles)
+      - Creación del archivo listado.txt (vínculo entre matrices y observaciones)
+  Scripts:
+    - ReuterGrid.py
+    - Calc_puntual_optimizado_partes.py (tres ejecuciones)
+  Archivos de salida (en 6_Resultados/f{freq}/COMMON/):
+    - Reuter_Grid.txt
+    - matriz_diseno.npy
+    - matriz_diseno_aero.npy
+    - matriz_pixel.npy
+    - listado.txt (en 5_Main/)
+
+  Clave: vce_shared_ones_cov
+  Descripción:
+    Fuerza la estimación VCE (Varianza-Covarianza de Componentes) usando pesos
+    unitarios (ones) y calculando también la matriz de covarianza de los parámetros.
+  Script:
+    - VCE06042026C.py (con bandera --output_covariance)
+  Salidas en 6_Resultados/f{freq}/COMMON/VCE_shared_ones/:
+    - parametros_estimados_ones_f{freq}.txt
+    - pesos_ones_f{freq}.csv
+    - errores_obs_ones_f{freq}.txt
+    - Normas_ones_f{freq}.txt
+    - matriz_varianza_covarianza_ones_f{freq}.npy
+
+  Clave: vce_shared_ones_nocov
+  Descripción:
+    Fuerza la estimación VCE con pesos unitarios, pero sin calcular la matriz de
+    covarianza (ahorra tiempo y memoria).
+  Script:
+    - VCE06042026C.py (sin --output_covariance)
+  Salidas (mismas que la versión con cov, excepto la matriz de covarianza).
+
+  Clave: vce_shared_sigmas_cov
+  Descripción:
+    Fuerza la estimación VCE utilizando los valores de sigma2 iniciales leídos del
+    archivo Informe_varianza_x_proyectos_f2190.txt (o 1 si no existe) y calculando
+    la matriz de covarianza.
+  Script:
+    - VCE06042026C.py (con --output_covariance y --sigma2_init_list adecuado)
+  Salidas en 6_Resultados/f{freq}/COMMON/VCE_shared_sigmas/:
+    - parametros_estimados_sigmas_f{freq}.txt
+    - pesos_sigmas_f{freq}.csv
+    - errores_obs_sigmas_f{freq}.txt
+    - Normas_sigmas_f{freq}.txt
+    - matriz_varianza_covarianza_sigmas_f{freq}.npy
+
+  Clave: vce_shared_sigmas_nocov
+  Descripción:
+    Fuerza la estimación VCE con sigmas iniciales pero sin matriz de covarianza.
+  Script:
+    - VCE06042026C.py (sin --output_covariance)
+  Salidas (sin la matriz de covarianza).
+
+  Clave: lcurve_shared_ones
+  Descripción:
+    Fuerza la optimización mediante L‑Curve utilizando los pesos y normas
+    obtenidos del VCE con pesos unitarios. Genera parámetros optimizados,
+    covarianza y un gráfico PDF de la curva L.
+  Script:
+    - LC060.py
+  Salidas en 6_Resultados/f{freq}/COMMON/LC_shared_ones/:
+    - parametros_optimizados_ones_f{freq}.txt
+    - matriz_varianza_covarianza_ones_f{freq}.npy
+    - errores_obs_ones_f{freq}.txt
+    - Reporte_L_Curva_ones_f{freq}.pdf
+
+  Clave: lcurve_shared_sigmas
+  Descripción:
+    Fuerza la optimización mediante L‑Curve utilizando los pesos y normas
+    del VCE con sigmas iniciales.
+  Script:
+    - LC060.py
+  Salidas en 6_Resultados/f{freq}/COMMON/LC_shared_sigmas/:
+    - parametros_optimizados_sigmas_f{freq}.txt
+    - matriz_varianza_covarianza_sigmas_f{freq}.npy
+    - errores_obs_sigmas_f{freq}.txt
+    - Reporte_L_Curva_sigmas_f{freq}.pdf
+
+--------------------------------------------------------------------------------
+2. PASOS POR CASO (se ejecutan para cada caso definido en --cases)
+--------------------------------------------------------------------------------
+
+  Clave: raster_t
+  Descripción:
+    Fuerza la generación del raster del potencial perturbador T a partir de la
+    matriz_pixel y de los parámetros estimados (procedentes de VCE o L‑Curve).
+  Script:
+    - Generador_de_Raster1.py (con argumento "T")
+  Salidas en 6_Resultados/f{freq}/{caso}/:
+    - Potencial_Perturbador.tif
+
+  Clave: restore
+  Descripción:
+    Fuerza el cálculo del término de Restore, que combina las expansiones de
+    GGM y Topo con el modelo ERTM para obtener la anomalía residual.
+  Script:
+    - Restore1.py
+  Salidas en 6_Resultados/f{freq}/{caso}/:
+    - Restore.txt
+
+  Clave: std
+  Descripción:
+    Fuerza el cálculo de la desviación estándar de los residuos (STD) a partir
+    de la covarianza de los parámetros y el archivo Restore.txt.
+  Script:
+    - Desv_Standar_GPU_Mejorado_241225.py
+  Salidas en 6_Resultados/f{freq}/{caso}/:
+    - Std.tif
+
+  Clave: qgeoid
+  Descripción:
+    Fuerza la generación del cuasigeoide gravimétrico (raster Z) a partir del
+    archivo Restore.txt.
+  Script:
+    - QGeoid1.py
+  Salidas en 6_Resultados/f{freq}/{caso}/:
+    - Qgeoide_Gravimetrico.tif
+
+  Clave: visu
+  Descripción:
+    Fuerza la creación de los mapas (PDF) nacional y local del cuasigeoide y
+    de la desviación estándar, a partir de los rasters generados.
+  Script:
+    - Visualizacion.py
+  Salidas en 7_Visualizaciones/f{freq}/{caso}/:
+    - Qgeoide_Gravimetrico.pdf
+    - Qgeoide_Gravimetrico_Delimitado.pdf
+    - STD.pdf
+    - STD_Delimitado.pdf
+
+  Clave: significancia
+  Descripción:
+    Fuerza el análisis de significancia de los parámetros estimados: cálculo de
+    estadísticos t, histogramas, y generación de mapas de parámetros significativos.
+  Script:
+    - Significancia_Parametros.py
+  Salidas en 7_Visualizaciones/f{freq}/{caso}/:
+    - Mapa_parametros_sign.pdf
+    - Mapa_parametros_sign_solos.pdf
+    - Mapa_parametros.pdf
+    - Mapa_STD_Parametros.pdf
+    - significancia_parametros.txt
+    - t_stats_parametros.txt
+    - Ploteo_t_stats.pdf
+    - Ploteo_param.pdf
+
+  Clave: raster_std_t
+  Descripción:
+    Fuerza el cálculo del raster de la desviación estándar del potencial T y la
+    generación de los mapas asociados.
+  Script:
+    - Desviacion_Potencial.py
+  Salidas en 6_Resultados/f{freq}/{caso}/:
+    - Potencial_Perturbador_STD.tif
+    - (mapas en 7_Visualizaciones)
+      * Mapa_Potencial_T_STD_local.pdf
+      * Potencial_Perturbador.pdf (mapa de T)
+
+  Clave: zero_zeta
+  Descripción:
+    Fuerza el cálculo del término de orden cero (zero‑zeta) a partir del raster Z
+    y los píxeles. Es un paso adicional que no genera archivos de salida específicos
+    pero es requerido para completar el procesamiento.
+  Script:
+    - termino_orden_cero.py
+  Salidas: no genera archivos persistentes; su ejecución es necesaria para la
+    consistencia de los resultados.
+
+--------------------------------------------------------------------------------
+OBSERVACIONES IMPORTANTES
+--------------------------------------------------------------------------------
+
+- Las claves de los pasos globales (restore_pixel, common, vce_*, lcurve_*) se
+  aplican a toda la frecuencia y deben usarse con cuidado, ya que su ejecución
+  puede ser costosa.
+
+- Las claves de los pasos por caso se aplican a cada caso individualmente.
+  Si se fuerza "restore", también se ejecutarán los pasos std, qgeoid y visu
+  (si están activados mediante los flags --restore y --qgeoid), pero cada uno
+  puede forzarse de forma independiente.
+
+- El flag --qgeoid requiere que --restore esté activo; si no se indica, el
+  pipeline lo activa automáticamente.
+
+- El modo "all" fuerza todos los pasos listados, independientemente de las
+  comprobaciones de existencia de archivos.
+
+- Para usar el modo "steps", se debe proporcionar una lista de claves separadas
+  por espacios, por ejemplo:
+    --force-mode steps --force-steps restore_pixel common vce_shared_ones_cov
+
+- El pipeline genera un reporte global en 6_Resultados/f{freq}/Reporte_GLOBAL_f{freq}.txt
+  donde se registran todas las ejecuciones y su estado.
+
+================================================================================
+
+
+
+
+
+Se ha generado una interfaz grafica para la ejecución del programa para el calculo de modelos cuasi-geoidales QgeoidGravSRBF. Este programa tiene la siguiente estructura: 
+
+INICIO
+  │
+  ├──► PASO GLOBAL (una sola vez)
+  │       run_restore_pixel
+  │       ├── Generar pixeles
+  │       ├── Interpolado modelos
+  │       └── GravLab_expand
+  │
+  │       OUTPUT:
+  │       ├── pixeles_txt (global)
+  │       ├── Expand_GGM
+  │       ├── Expand_topo1
+  │       ├── Expand_topo2
+  │       └── puntos_centrales_matlab
+  │
+  │
+  └──► LOOP POR CADA FRECUENCIA f
+            │
+            ├──► COMMON
+            │       run_common
+            │       ├── Reuter Grid
+            │       ├── Matriz diseño (terrestre)
+            │       ├── Matriz diseño (aéreo)
+            │       └── Matriz diseño (pixeles)
+            │
+            │       OUTPUT:
+            │       ├── matriz_diseno
+            │       ├── matriz_diseno_aero
+            │       ├── matriz_pixel
+            │       └── reuter_grid
+            │
+            │
+            ├──► VCE SHARED (2 ramas)
+            │       ├── use_ones = True
+            │       │       └── VCE → (param_est, pesos, residuos, normas, cov)
+            │       │
+            │       └── use_ones = False (sigmas)
+            │               └── VCE → (param_est, pesos, residuos, normas, cov)
+            │
+            │
+            ├──► L-CURVE SHARED (depende de VCE)
+            │       ├── ones → LC → (params_opt, cov_opt)
+            │       └── sigmas → LC → (params_opt, cov_opt)
+            │
+            │
+            └──► CASOS (4 ramas independientes)
+                    │
+                    ├───────────────┬────────────────┬──────────────────┬──────────────────┐
+                    │               │                │                  │
+                  1VC           1VCLC           SigmasVC           SigmasVCLC
+               (ones, no LC) (ones + LC)     (sigmas, no LC)    (sigmas + LC)
+                    │               │                │                  │
+                    │               │                │                  │
+                    ▼               ▼                ▼                  ▼
+
+          ┌────────────────────────────────────────────────────────────────────┐
+          │                PIPELINE INTERNO DE CADA CASO                      │
+          └────────────────────────────────────────────────────────────────────┘
+
+                    │
+                    ├──► Copiar pixeles global → pixeles_case
+                    │
+                    ├──► Raster T
+                    │       usa:
+                    │       ├── matriz_pixel (COMMON)
+                    │       ├── parámetros (VCE o LC)
+                    │       └── pixeles_case
+                    │
+                    │
+                    ├──► Restore
+                    │       usa:
+                    │       ├── pixeles_case
+                    │       ├── Expand_GGM
+                    │       ├── Expand_topo1
+                    │       ├── Expand_topo2
+                    │       └── ERTM
+                    │
+                    │
+                    ├──► STD (desviación estándar)
+                    │       usa:
+                    │       ├── covarianza (VCE o LC)
+                    │       ├── restore_txt
+                    │       └── matriz_pixel
+                    │
+                    │
+                    ├──► QGeoid
+                    │       usa:
+                    │       └── restore_txt
+                    │
+                    │
+                    ├──► Visualización
+                    │       usa:
+                    │       ├── raster_Z
+                    │       └── raster_std
+                    │
+                    │
+                    ├──► Significancia
+                    │       usa:
+                    │       ├── parámetros (VCE o LC)
+                    │       ├── covarianza
+                    │       ├── listado
+                    │       └── reuter_grid
+                    │
+                    │
+                    ├──► Raster STD T
+                    │       usa:
+                    │       ├── raster_T
+                    │       ├── pixeles_case
+                    │       └── restore_txt
+                    │
+                    │
+                    └──► Término orden cero
+                            usa:
+                            ├── pixeles_case
+                            └── raster_Z
+
+Se anexa también una imagen del diseño de la primera interfaz grafica para la ejecución de este mismo programa. 
+
+
+y se anexa el siguiente diccionario de los parámetros. 
+
+
+[GENERAL]
+
+Frecuencias:
+Frecuencias armónicas que serán utilizadas en el cálculo del modelo.
+
+Se deben introducir separadas por comas.
+
+Ejemplo:
+2190,2500,2800
+
+Cada frecuencia genera una solución independiente dentro de las carpetas de resultados.
+
+
+Latitud Máxima:
+Límite norte de la región de cálculo del raster final.
+
+Debe pertenecer completamente al interior de la región cubierta por las observaciones.
+
+
+Latitud Mínima:
+Límite sur de la región de cálculo del raster final.
+
+Debe pertenecer completamente al interior de la región cubierta por las observaciones.
+
+
+Longitud Máxima:
+Límite oriental de la región de cálculo del raster final.
+
+Debe pertenecer completamente al interior de la región cubierta por las observaciones.
+
+
+Longitud Mínima:
+Límite occidental de la región de cálculo del raster final.
+
+Debe pertenecer completamente al interior de la región cubierta por las observaciones.
+
+
+Región de interés:
+La región delimitada por las coordenadas máximas y mínimas corresponde a la región de cálculo o región de interés del modelo final.
+
+Esta región debe ser menor que la región de observaciones al menos en una distancia equivalente al parámetro Apertura.
+
+
+Apertura:
+Distancia de seguridad entre la región de observaciones y la región de cálculo.
+
+Este parámetro evita efectos de borde durante los procesos de análisis y síntesis.
+
+La región de observaciones debe exceder la región de cálculo al menos en esta distancia.
+
+
+Resolución:
+Resolución espacial final del raster calculado.
+
+Por ejemplo:
+1
+
+representa una resolución de:
+1' x 1'
+
+(minuto de arco).
+
+Resoluciones menores generan modelos más densos y aumentan significativamente el consumo computacional.
+
+
+Dividir Proyectos Aéreos:
+Indica si los proyectos aerogravimétricos deben tratarse de manera independiente durante el cálculo.
+
+Opciones:
+- Si  -> cada proyecto aéreo se procesa por separado.
+- No -> todos los proyectos se combinan en un único conjunto.
+
+Se recomienda usar "Si" cuando existen múltiples campañas aerogravimétricas.
+
+
+Tamaño de Bloque:
+Cantidad de observaciones procesadas simultáneamente durante la construcción de matrices de diseño.
+
+Este parámetro controla el consumo de memoria RAM y GPU.
+
+- Valores grandes:
+  mayor velocidad,
+  mayor consumo de memoria.
+
+- Valores pequeños:
+  menor consumo de memoria,
+  mayor tiempo de cálculo.
+
+Debe ajustarse según las capacidades del equipo.
+
+
+Filtro Terrestre:
+Filtro utilizado durante el paso de análisis para los datos terrestres.
+
+Opciones disponibles:
+- Shannon
+- Cup
+
+Este filtro afecta el cálculo de los parámetros del modelo.
+
+
+Filtro Aéreo:
+Filtro utilizado durante el paso de análisis para los datos aerogravimétricos.
+
+Opciones disponibles:
+- Shannon
+- Cup
+
+Este filtro afecta el cálculo de los parámetros del modelo.
+
+
+Filtro para Pixeles:
+Filtro utilizado durante el paso de síntesis para los puntos del raster final.
+
+Opciones disponibles:
+- Shannon
+- Cup
+
+Este filtro afecta la generación final del modelo raster.
+
+
+
+[ARCHIVOS]
+
+Datos Terrestres:
+Archivo de observaciones gravimétricas terrestres.
+
+Debe estar separado por tabulación y contener las columnas especificadas en la pestaña Columnas.
+
+
+Datos Aerogravimétricos:
+Archivo de observaciones aerogravimétricas.
+
+Debe estar separado por tabulación y contener las columnas especificadas en la pestaña Columnas.
+
+
+Listado:
+Archivo auxiliar que almacena las rutas necesarias para el cálculo de las matrices de diseño.
+
+Normalmente se genera automáticamente.
+
+Se recomienda conservar el valor por defecto.
+
+
+Desviaciones Estándar:
+Archivo TXT que contiene las desviaciones estándar iniciales de cada proyecto.
+
+Debe contener dos columnas separadas por tabulación:
+
+Proyecto    sigma_i
+
+Ejemplo:
+Proyecto_A    1.2
+Proyecto_B    0.8
+
+Este archivo se utiliza únicamente en los métodos basados en sigmas iniciales.
+
+
+
+[COLUMNAS]
+
+Observaciones terrestres:
+Las entradas corresponden a los nombres exactos de las columnas presentes en el archivo de datos terrestres.
+
+Todas las columnas deben existir exactamente como aparecen en el archivo original.
+
+
+Latitud OBS:
+Nombre de la columna que contiene la latitud de las observaciones terrestres.
+
+
+Longitud OBS:
+Nombre de la columna que contiene la longitud de las observaciones terrestres.
+
+
+Altura OBS:
+Nombre de la columna que contiene la altura de las observaciones terrestres.
+
+
+Observaciones aerogravimétricas:
+Las entradas corresponden a los nombres exactos de las columnas presentes en el archivo de datos aerogravimétricos.
+
+
+Latitud AERO:
+Nombre de la columna que contiene la latitud de las observaciones aerogravimétricas.
+
+
+Longitud AERO:
+Nombre de la columna que contiene la longitud de las observaciones aerogravimétricas.
+
+
+Altura AERO:
+Nombre de la columna que contiene la altura de las observaciones aerogravimétricas.
+
+
+
+[PROCESO]
+
+1VC:
+Todas las desviaciones estándar iniciales se fijan en 1.
+
+Únicamente se ejecuta el proceso VCE.
+
+
+1VCLC:
+Todas las desviaciones estándar iniciales se fijan en 1.
+
+Se ejecuta:
+1. VCE
+2. L-Curve (LC)
+
+
+SigmasVC:
+Las desviaciones estándar iniciales se leen desde el archivo de sigmas.
+
+Únicamente se ejecuta el proceso VCE.
+
+
+SigmasVCLC:
+Las desviaciones estándar iniciales se leen desde el archivo de sigmas.
+
+Se ejecuta:
+1. VCE
+2. L-Curve (LC)
+
+
+
+[FORZAR_PASOS]
+
+Restore_Pixel:
+Genera el grid base utilizado para el raster final.
+
+
+Common:
+Ejecuta los cálculos compartidos entre todos los casos.
+
+Incluye principalmente las matrices de diseño y productos comunes.
+
+
+VCE_ones_sin_cov:
+Ejecuta VCE usando desviaciones estándar iniciales iguales a 1.
+
+No calcula matriz de covarianza.
+
+Este modo se utiliza principalmente como entrada para LC.
+
+
+VCE_ones_con_cov:
+Ejecuta VCE usando desviaciones estándar iniciales iguales a 1.
+
+Calcula además la matriz de covarianza.
+
+
+VCE_sigmas_sin_cov:
+Ejecuta VCE utilizando las desviaciones estándar del archivo de sigmas.
+
+No calcula matriz de covarianza.
+
+
+VCE_sigmas_con_cov:
+Ejecuta VCE utilizando las desviaciones estándar del archivo de sigmas.
+
+Calcula además la matriz de covarianza.
+
+
+LCurve_ones:
+Ejecuta el método L-Curve utilizando la solución basada en desviaciones estándar iguales a 1.
+
+
+LCurve_sigmas:
+Ejecuta el método L-Curve utilizando la solución basada en sigmas iniciales.
+
+
+Raster_T:
+Genera el raster del potencial perturbador T.
+
+
+Restore:
+Ejecuta el proceso de restauración necesario para el cálculo de la anomalía de altura.
+
+
+Desviacion_Estandar:
+Calcula el raster de desviaciones estándar del modelo restaurado.
+
+
+Visualizacion:
+Genera todos los mapas y productos gráficos del modelo.
+
+
+Significancia:
+Calcula la significancia estadística de los parámetros y genera las gráficas asociadas.
+
+
+Raster_STD_T:
+Calcula el raster de desviaciones estándar asociado al potencial perturbador T.
+
+
+Termino_Orden_Cero:
+Ajusta los raster finales aplicando el primer y segundo término de orden cero.
