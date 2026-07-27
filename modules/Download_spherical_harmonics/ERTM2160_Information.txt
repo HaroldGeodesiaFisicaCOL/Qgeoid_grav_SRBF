@@ -1,0 +1,9 @@
+The python script ERTM2160.py is a adaptation or translation of matlab script "ertm2160_2013_v2.m" (Christian
+Hirt, WA Centre for Geodesy, Curtin University)
+
+The links for the original matlab script and the ERTM2160.py adaptation are:
+https://ddfe.curtin.edu.au/gravitymodels/ERTM2160/software/ertm2160_2013_v2.m
+
+the links for the download the ERTM2160 model are:
+https://ddfe.curtin.edu.au/gravitymodels/ERTM2160/
+https://ddfe.blazejbucha.com/models/
