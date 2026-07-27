@@ -1,6 +1,7 @@
 # In this script, the first part consist in downloading the spherical harmonics coefficients of the
 # geopotential models, long wavelegth (GGM) and short wavelegth (Gtopo).
 import os
+from attr.validators import ge
 import numpy as np
 from modules.Download_spherical_harmonics.Dowloand_grid_Model import (
     dowloand_all_folder,
@@ -50,12 +51,26 @@ lon_max = 25
 # Dowloand the model ERTM2160's zeta component
 # base_url_zeta = "https://ddfe.curtin.edu.au/gravitymodels/ERTM2160/data/geoid"
 base_url_zeta = "https://ddfe.blazejbucha.com/models/ERTM2160/data/geoid/"
+base_url_gravity = "https://ddfe.blazejbucha.com/models/ERTM2160/data/dg/"
 base_local_path_zeta = r"modules/Compute_module/1_Modelos/modeloERTM2160/data/geoid"
+base_local_path_gravity = r"modules/Compute_module/1_Modelos/modeloERTM2160/data/dg"
 os.makedirs(base_local_path_zeta, exist_ok=True)
-generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_zeta, base_local_path_zeta)
+os.makedirs(base_local_path_gravity, exist_ok=True)
+
+print('Downloading ERTM2160 geoid component...')
+# generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_zeta, base_local_path_zeta)
+print('Downloading ERTM2160 gravity component...')
+generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_gravity, base_local_path_gravity)
+
 # generate the grid model of height anomaly (m)
-X1, Y1, Z1 = generar_modelo_ertm2160(
+generar_modelo_ertm2160(
     'geoid', lon_min,lon_max, lat_min, lat_max,
     1.0, 1.0, "modules/Compute_module/1_Modelos/modeloERTM2160/data", np.nan, 'cubic',
     outputfile='modules/Compute_module/1_Modelos/modeloERTM2160/Anomalias_Altura_ERTM_2160.tif'
+    )
+
+generar_modelo_ertm2160(
+    'gravity', lon_min,lon_max, lat_min, lat_max,
+    1.0, 1.0, "modules/Compute_module/1_Modelos/modeloERTM2160/data", np.nan, 'cubic',
+    outputfile='modules/Compute_module/1_Modelos/modeloERTM2160/Perturbaciones_Gravedad_ERTM_2160.tif'
     )
