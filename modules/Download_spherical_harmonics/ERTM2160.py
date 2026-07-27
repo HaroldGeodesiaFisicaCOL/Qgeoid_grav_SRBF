@@ -344,7 +344,6 @@ def generar_modelo_ertm2160(functional, minlon1, maxlon1, minlat1, maxlat1,
 
         print(f'Archivo GeoTIFF exportado con EPSG:{epsg} con éxito: {outputfile}')
 
-    return X, Y, Z
 
 
 # if __name__ == '__main__':
