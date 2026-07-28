@@ -3,6 +3,9 @@
 import os
 from attr.validators import ge
 import numpy as np
+from pathlib import Path
+
+
 from modules.Download_spherical_harmonics.Dowloand_grid_Model import (
     dowloand_all_folder,
     download_tiles,
@@ -16,11 +19,19 @@ from modules.Download_spherical_harmonics.Download_spherical_harmonics import (
     descargar_modelo_icgem,
 )
 
+from modules.Download_spherical_harmonics.Dowloand_SRTM import (
+    generar_modelo_srtm,
+)
+
+from modules.Download_spherical_harmonics.EGM_96.Expansion_EGM96 import (
+    expansion_EGM96,
+)
 os.makedirs('modules/Compute_module/1_Modelos/modeloXGM2019',exist_ok=True)
 os.makedirs('modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014',exist_ok=True)
 GGM = 'XGM2019'
 Gtopo1 = 'dV_ELL_Earth2014_plusGRS80'
 Gtopo2 = 'dV_ELL_Earth2014_5480_plusGRS80'
+GGM_EGM96 = 'EGM96'
 print('Dowloand the GGM model...')
 descargar_modelo_icgem(modelo=GGM,grado=760,
                             ruta='modules/Compute_module/1_Modelos/modeloXGM2019',
@@ -60,7 +71,7 @@ os.makedirs(base_local_path_gravity, exist_ok=True)
 print('Downloading ERTM2160 geoid component...')
 # generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_zeta, base_local_path_zeta)
 print('Downloading ERTM2160 gravity component...')
-generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_gravity, base_local_path_gravity)
+# generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_gravity, base_local_path_gravity)
 
 # generate the grid model of height anomaly (m)
 generar_modelo_ertm2160(
@@ -74,3 +85,42 @@ generar_modelo_ertm2160(
     1.0, 1.0, "modules/Compute_module/1_Modelos/modeloERTM2160/data", np.nan, 'cubic',
     outputfile='modules/Compute_module/1_Modelos/modeloERTM2160/Perturbaciones_Gravedad_ERTM_2160.tif'
     )
+
+
+# DOWLOAND THE SRTM MODEL
+print('Downloading SRTM model...')
+os.makedirs("modules/Compute_module/1_Modelos/modelo_SRTM/data", exist_ok=True)
+generar_modelo_srtm(
+    lon_min, lon_max, lat_min, lat_max,
+)
+# Delete the temporary folder to models ERTM and SRTM
+# os.rmdir("modules/Compute_module/1_Modelos/modelo_SRTM/data")
+# os.rmdir("modules/Compute_module/1_Modelos/modeloERTM2160/data")
+
+# Spherical harmonics synthesis modelo EGM96
+print('Dowloand the GGM EGM96 model for the heights whit SRTM model...')
+descargar_modelo_icgem(modelo=GGM_EGM96,grado=360,
+                            ruta='modules/Compute_module/1_Modelos/modelo_EGM2008',
+                            tipo="global",
+                            sobrescribir=False,
+                            timeout=120,
+                            max_reintentos=8,)
+# Spherical harmonics expansion modelo EGM96
+print('Expanding the GGM EGM96 model for the heights whit SRTM model...')
+project_root = Path(__file__).resolve().parent
+graflab_path = project_root / "dependencies" / "Graflab"
+
+expansion_EGM96(
+    lat_min=lat_min,
+    lat_max=lat_max,
+    long_min=lon_min,
+    long_max=lon_max,
+    path_gfc_model1="modelo_EGM2008/EGM96.gfc",
+    output_model1="modelo_EGM2008/EGM96",
+    out_dir="modules/Compute_module/1_Modelos/modelo_EGM2008",
+    Nombre_mat="EGM96.m",
+    DTM_path=str(project_root / "dependencies" / "Graflab" / "Earth2014_SUR2014_10800.mat"),
+    Raster_EGM96_path="modules/Compute_module/1_Modelos/modelo_EGM2008/EGM96.tif",
+    graflab_path=str(graflab_path),
+    espaciado=1 / 60,
+)
