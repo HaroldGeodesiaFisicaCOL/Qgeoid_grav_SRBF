@@ -1,7 +1,6 @@
 # In this script, the first part consist in downloading the spherical harmonics coefficients of the
 # geopotential models, long wavelegth (GGM) and short wavelegth (Gtopo).
 import os
-from attr.validators import ge
 import numpy as np
 from pathlib import Path
 
@@ -25,6 +24,10 @@ from modules.Download_spherical_harmonics.Dowloand_SRTM import (
 
 from modules.Download_spherical_harmonics.EGM_96.Expansion_EGM96 import (
     expansion_EGM96,
+)
+
+from modules.Remove_module.Terrestrial_processing.Main_Procesamiento_terrestres import (
+    procesamiento_terrestres,
 )
 os.makedirs('modules/Compute_module/1_Modelos/modeloXGM2019',exist_ok=True)
 os.makedirs('modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014',exist_ok=True)
@@ -90,9 +93,9 @@ generar_modelo_ertm2160(
 # DOWLOAND THE SRTM MODEL
 print('Downloading SRTM model...')
 os.makedirs("modules/Compute_module/1_Modelos/modelo_SRTM/data", exist_ok=True)
-generar_modelo_srtm(
-    lon_min, lon_max, lat_min, lat_max,
-)
+# generar_modelo_srtm(
+#     lon_min, lon_max, lat_min, lat_max,
+# )
 # Delete the temporary folder to models ERTM and SRTM
 # os.rmdir("modules/Compute_module/1_Modelos/modelo_SRTM/data")
 # os.rmdir("modules/Compute_module/1_Modelos/modeloERTM2160/data")
@@ -123,4 +126,30 @@ expansion_EGM96(
     Raster_EGM96_path="modules/Compute_module/1_Modelos/modelo_EGM2008/EGM96.tif",
     graflab_path=str(graflab_path),
     espaciado=1 / 60,
+)
+
+
+# REMOVE STEP FOR THE GRAVITY OBSERVATIONS
+# First, the user have to know the number of technique's  gravity observations
+# For example, in the case of Italian model we have 2 techniques: Terrestrial and aereal.
+
+# For the terrestrial technique :
+# Include the column names for latitude, longitude, height, and value
+print('Removing terrestrial data...')
+T_col_lat = "Lat"
+T_col_lon = "Lon"
+T_col_h = "h"
+T_col_valor = r"gravity disturbance(mGal)"
+procesamiento_terrestres(
+    ruta_datos_iniciales="modules/Remove_module/Initial_observation/terrestrial_data.txt",
+    col_lat=T_col_lat,
+    col_lon=T_col_lon,
+    col_h=T_col_h,
+    col_valor=T_col_valor,
+    path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
+    path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
+    path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
+    Ruta_ERTM2160="modules/Compute_module/1_Modelos/modeloERTM2160/Perturbaciones_Gravedad_ERTM_2160.tif",
+    ruta_obs_final="modules/Compute_module/3_Observaciones/terrestrial_data.txt",
+    graflab_path=str(graflab_path),
 )
