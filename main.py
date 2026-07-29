@@ -33,13 +33,17 @@ from modules.Remove_module.Terrestrial_processing.Main_Procesamiento_terrestres 
     procesamiento_terrestres,
 )
 
+#=============================================================================
+# DOWLOAND THE NECESSARY MODELS FOR THE GRAVITY REFINEMENT
+#=============================================================================
 
 os.makedirs('modules/Compute_module/1_Modelos/modeloXGM2019',exist_ok=True)
 os.makedirs('modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014',exist_ok=True)
-GGM = 'XGM2019'
-Gtopo1 = 'dV_ELL_Earth2014_plusGRS80'
-Gtopo2 = 'dV_ELL_Earth2014_5480_plusGRS80'
-GGM_EGM96 = 'EGM96'
+GGM = 'XGM2019' # Name of the GGM model
+Gtopo1 = 'dV_ELL_Earth2014_plusGRS80' # Name of the topographic model
+Gtopo2 = 'dV_ELL_Earth2014_5480_plusGRS80' # Name of the topographic model
+GGM_EGM96 = 'EGM96' # Name of the geoid model for the DEM (Digital Elevation Model) in this case SRTM
+
 print('Dowloand the GGM model...')
 descargar_modelo_icgem(modelo=GGM,grado=760,
                             ruta='modules/Compute_module/1_Modelos/modeloXGM2019',
@@ -47,6 +51,7 @@ descargar_modelo_icgem(modelo=GGM,grado=760,
                             sobrescribir=False,
                             timeout=120,
                             max_reintentos=8,)
+
 print('Dowloand the Gtopo model dv_ELL_Earth2014 d/o 2190...')
 descargar_modelo_icgem(modelo=Gtopo1,grado=2190,
                             ruta='modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014',
@@ -54,6 +59,7 @@ descargar_modelo_icgem(modelo=Gtopo1,grado=2190,
                             sobrescribir=False,
                             timeout=120,
                             max_reintentos=8,)
+
 print('Dowloand the Gtopo model dv_ELL_Earth2014 d/o 5480...')
 descargar_modelo_icgem(modelo=Gtopo2,grado=5480,
                             ruta='modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014',
@@ -62,12 +68,13 @@ descargar_modelo_icgem(modelo=Gtopo2,grado=5480,
                             timeout=120,
                             max_reintentos=8,)
 print('Dowloand the Gtopo model ERTM2190...')
-#This parameters define the area to download
+#This parameters define the area to download for the grid model for the topographic geopotential model
+# in this case we use de ERTM2160, but the SRTMv2_gravity it's a other option.
 lat_min = 34
 lat_max = 50
 lon_min = 5
 lon_max = 25
-# Dowloand the model ERTM2160's zeta component
+# Dowloand the model ERTM2160's zeta component, for the restore procedure.
 # base_url_zeta = "https://ddfe.curtin.edu.au/gravitymodels/ERTM2160/data/geoid"
 base_url_zeta = "https://ddfe.blazejbucha.com/models/ERTM2160/data/geoid/"
 base_url_gravity = "https://ddfe.blazejbucha.com/models/ERTM2160/data/dg/"
@@ -81,7 +88,7 @@ print('Downloading ERTM2160 geoid component...')
 print('Downloading ERTM2160 gravity component...')
 # generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_gravity, base_local_path_gravity)
 
-# generate the grid model of height anomaly (m)
+# generate the grid model of height anomaly (m), associated with Topographic effects.
 generar_modelo_ertm2160(
     'geoid', lon_min,lon_max, lat_min, lat_max,
     1.0, 1.0, "modules/Compute_module/1_Modelos/modeloERTM2160/data", np.nan, 'cubic',
@@ -94,8 +101,7 @@ generar_modelo_ertm2160(
     outputfile='modules/Compute_module/1_Modelos/modeloERTM2160/Perturbaciones_Gravedad_ERTM_2160.tif'
     )
 
-
-# DOWLOAND THE SRTM MODEL
+# DOWLOAND THE SRTM MODEL, this model will be combinate whit EGM96 for the grid final model elipsoidal heights.
 print('Downloading SRTM model...')
 os.makedirs("modules/Compute_module/1_Modelos/modelo_SRTM/data", exist_ok=True)
 # generar_modelo_srtm(
@@ -105,14 +111,14 @@ os.makedirs("modules/Compute_module/1_Modelos/modelo_SRTM/data", exist_ok=True)
 # os.rmdir("modules/Compute_module/1_Modelos/modelo_SRTM/data")
 # os.rmdir("modules/Compute_module/1_Modelos/modeloERTM2160/data")
 
-# Download the Earth surface model
+# Download the Earth surface model, this model will be used for the spherical harmonics synthesis for the EGM96 model.
 print('Downloading Earth surface model...')
 dowloand_Earth_surface(
     link_carpeta="https://drive.google.com/drive/folders/1P5W_ECmnqjChDs-GbN_jbfNm4okWjyIN?usp=sharing",
     carpeta_destino="dependencies/Graflab"
 )
 
-# Spherical harmonics synthesis modelo EGM96
+# Spherical harmonics synthesis modelo EGM96 (First download the spherical harmonics)
 print('Dowloand the GGM EGM96 model for the heights whit SRTM model...')
 descargar_modelo_icgem(modelo=GGM_EGM96,grado=360,
                             ruta='modules/Compute_module/1_Modelos/modelo_EGM2008',
@@ -120,6 +126,7 @@ descargar_modelo_icgem(modelo=GGM_EGM96,grado=360,
                             sobrescribir=False,
                             timeout=120,
                             max_reintentos=8,)
+
 # Spherical harmonics expansion modelo EGM96
 print('Expanding the GGM EGM96 model for the heights whit SRTM model...')
 project_root = Path(__file__).resolve().parent
@@ -140,10 +147,11 @@ expansion_EGM96(
     espaciado=1 / 60,
 )
 
-
+#=============================================================================
 # REMOVE STEP FOR THE GRAVITY OBSERVATIONS
 # First, the user have to know the number of technique's  gravity observations
 # For example, in the case of Italian model we have 2 techniques: Terrestrial and aereal.
+#=============================================================================
 
 # For the terrestrial technique :
 # Include the column names for latitude, longitude, height, and value
