@@ -22,6 +22,9 @@ from modules.Download_spherical_harmonics.Dowloand_SRTM import (
     generar_modelo_srtm,
 )
 
+from modules.Download_spherical_harmonics.Download_Earth_surface import (
+   dowloand_Earth_surface,
+)
 from modules.Download_spherical_harmonics.EGM_96.Expansion_EGM96 import (
     expansion_EGM96,
 )
@@ -29,6 +32,8 @@ from modules.Download_spherical_harmonics.EGM_96.Expansion_EGM96 import (
 from modules.Remove_module.Terrestrial_processing.Main_Procesamiento_terrestres import (
     procesamiento_terrestres,
 )
+
+
 os.makedirs('modules/Compute_module/1_Modelos/modeloXGM2019',exist_ok=True)
 os.makedirs('modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014',exist_ok=True)
 GGM = 'XGM2019'
@@ -100,6 +105,13 @@ os.makedirs("modules/Compute_module/1_Modelos/modelo_SRTM/data", exist_ok=True)
 # os.rmdir("modules/Compute_module/1_Modelos/modelo_SRTM/data")
 # os.rmdir("modules/Compute_module/1_Modelos/modeloERTM2160/data")
 
+# Download the Earth surface model
+print('Downloading Earth surface model...')
+dowloand_Earth_surface(
+    link_carpeta="https://drive.google.com/drive/folders/1P5W_ECmnqjChDs-GbN_jbfNm4okWjyIN?usp=sharing",
+    carpeta_destino="dependencies/Graflab"
+)
+
 # Spherical harmonics synthesis modelo EGM96
 print('Dowloand the GGM EGM96 model for the heights whit SRTM model...')
 descargar_modelo_icgem(modelo=GGM_EGM96,grado=360,
@@ -140,16 +152,16 @@ T_col_lat = "Lat"
 T_col_lon = "Lon"
 T_col_h = "h"
 T_col_valor = r"gravity disturbance(mGal)"
-procesamiento_terrestres(
-    ruta_datos_iniciales="modules/Remove_module/Initial_observation/terrestrial_data.txt",
-    col_lat=T_col_lat,
-    col_lon=T_col_lon,
-    col_h=T_col_h,
-    col_valor=T_col_valor,
-    path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
-    path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
-    path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
-    Ruta_ERTM2160="modules/Compute_module/1_Modelos/modeloERTM2160/Perturbaciones_Gravedad_ERTM_2160.tif",
-    ruta_obs_final="modules/Compute_module/3_Observaciones/terrestrial_data.txt",
-    graflab_path=str(graflab_path),
-)
+# procesamiento_terrestres(
+#     ruta_datos_iniciales="modules/Remove_module/Initial_observation/terrestrial_data.txt",
+#     col_lat=T_col_lat,
+#     col_lon=T_col_lon,
+#     col_h=T_col_h,
+#     col_valor=T_col_valor,
+#     path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
+#     path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
+#     path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
+#     Ruta_ERTM2160="modules/Compute_module/1_Modelos/modeloERTM2160/Perturbaciones_Gravedad_ERTM_2160.tif",
+#     ruta_obs_final="modules/Compute_module/3_Observaciones/terrestrial_data.txt",
+#     graflab_path=str(graflab_path),
+# )
