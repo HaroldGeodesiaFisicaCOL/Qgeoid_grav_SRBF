@@ -118,7 +118,7 @@ dowloand_Earth_surface(
     carpeta_destino="dependencies/Graflab"
 )
 
-# Spherical harmonics synthesis modelo EGM96 (First download the spherical harmonics)
+# Spherical harmonics synthesis model EGM96 (First download the spherical harmonics)
 print('Dowloand the GGM EGM96 model for the heights whit SRTM model...')
 descargar_modelo_icgem(modelo=GGM_EGM96,grado=360,
                             ruta='modules/Compute_module/1_Modelos/modelo_EGM2008',
@@ -151,6 +151,7 @@ expansion_EGM96(
 # REMOVE STEP FOR THE GRAVITY OBSERVATIONS
 # First, the user have to know the number of technique's  gravity observations
 # For example, in the case of Italian model we have 2 techniques: Terrestrial and aereal.
+# for the colombian model we have 2 techniques: Terrestrial, aereal and altimetry.
 #=============================================================================
 
 # For the terrestrial technique :
