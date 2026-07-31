@@ -40,7 +40,7 @@ DEFAULT_LAT_MIN = "3.3594065063999592"
 DEFAULT_LON_MAX = "-72.7355829984999929"
 DEFAULT_LON_MIN = "-78.4189161044999992"
 DEFAULT_APERTURA = "0.326666666666666666666666666666"
-DEFAULT_SINO = "Si"
+DEFAULT_SINO = "No"
 DEFAULT_BLOCK_SIZE = 5000
 DEFAULT_CASES = ["1VC"]
 
@@ -312,7 +312,7 @@ def crear_listado_automatico(listado_path: Path, outputs_common: Dict[str, Path]
         return p.relative_to(BASE_DIR) if rel_paths else p.resolve()
     lines = []
     if "matriz_diseno" in outputs_common and "puntos" in input_paths:
-        lines.append(f"{_fmt(outputs_common['matriz_diseno'])}\t{_fmt(input_paths['puntos'])}\t Si")
+        lines.append(f"{_fmt(outputs_common['matriz_diseno'])}\t{_fmt(input_paths['puntos'])}\t No")
     if "matriz_diseno_aero" in outputs_common and "puntos_aero" in input_paths:
         lines.append(f"{_fmt(outputs_common['matriz_diseno_aero'])}\t{_fmt(input_paths['puntos_aero'])}\t{si_no}")
     with listado_path.open("w", encoding="utf-8") as f:
@@ -527,7 +527,7 @@ def run_shared_vce(freq: str, use_ones: bool, sigma_file: Path, input_paths: Dic
         logger.info(msg)
         return shared_outputs, [msg]
     sigma2_init_list = construir_sigma2_init_list(input_paths["listado"], use_ones, sigma_file)
-    vce_args = ["--rutas_archivo", str(input_paths["listado"]), "--sigma2_init_list", sigma2_init_list, "--sigma_mu2_init", "1.0", "--max_iter", "50", "--tol", "1e-11", "--num_trace_samples", "1", "--output_beta", str(shared_outputs["param_est"]), "--output_weights", str(shared_outputs["pesos"]), "--output_residuales", str(shared_outputs["residuos"]), "--output_normas", str(shared_outputs["normas"])]
+    vce_args = ["--rutas_archivo","--col_val" ,str(input_paths["listado"]), "--sigma2_init_list", sigma2_init_list, "--sigma_mu2_init", "1.0", "--max_iter", "50", "--tol", "1e-11", "--num_trace_samples", "1", "--output_beta", str(shared_outputs["param_est"]), "--output_weights", str(shared_outputs["pesos"]), "--output_residuales", str(shared_outputs["residuos"]), "--output_normas", str(shared_outputs["normas"])]
     if boolCov:
         vce_args.extend(["--output_covariance", str(shared_outputs["vce_cov"])])
     rc, out = run_subprocess_capture(scripts["vce"], f"VCE_shared_{tag}", vce_args)
@@ -706,12 +706,12 @@ def build_config_from_args(args: argparse.Namespace) -> PipelineConfig:
         lon_min=str(args.lon_min),
         apertura=str(args.apertura),
         si_no=str(args.si_no),
-        
+
         puntos=resolve_input_path(args.puntos, "3_Observaciones"),
         puntos_aero=resolve_input_path(args.puntos_aero, "3_Observaciones"),
         listado=resolve_input_path(args.listado, "5_Main"),
         sigma_file=resolve_input_path(args.sigma_file, "3_Observaciones"),
-        
+
         cases=list(args.cases),
         force_mode=str(args.force_mode),
         force_steps=[str(x) for x in args.force_steps],
