@@ -188,7 +188,7 @@ A_col_lon = "Lon"
 A_col_h = "h"
 A_col_valor = r"gravity disturbance(mGal)"
 procesamiento_aereos(
-    input_file="modules/Remove_module/Initial_observations/airborne_data.txt",
+    input_file="modules/Remove_module/Initial_observation/airborne_data.txt",
     col_lat=A_col_lat,
     col_lon=A_col_lon,
     col_h=A_col_h,
