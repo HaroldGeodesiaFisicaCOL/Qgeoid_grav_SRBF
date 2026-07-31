@@ -31,7 +31,7 @@ def Mapa(region,df1,df2,Ruta_mapa):
         label="Observaciones Atípicas",
     )
     fig1.savefig(Ruta_mapa,dpi=720)
-    fig1.show()
+    # fig1.show()
 
 def Mapa_valor_gravedad(region,df,col_lat,col_lon, Ruta_Mapa,zmin,zmax, Columna):
 
@@ -59,4 +59,4 @@ def Mapa_valor_gravedad(region,df,col_lat,col_lon, Ruta_Mapa,zmin,zmax, Columna)
     fig.colorbar(cmap=cpt_file, frame='af+lPerturbaciones de Gravedad')  # Asocia la barra de color a la CPT
 
     fig.savefig(Ruta_Mapa, dpi=600)
-    fig.show()
+    # fig.show()

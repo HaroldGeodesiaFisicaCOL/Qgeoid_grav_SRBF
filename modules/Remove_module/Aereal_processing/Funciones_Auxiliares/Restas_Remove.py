@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-from Funciones_Auxiliares.Tratamiento_Alturas import interpolado_MODELOS
+from .Tratamiento_Alturas import interpolado_MODELOS
 
 
 #FUNCIONES NECESARIAS PARA EL SCRIPT
@@ -65,7 +65,7 @@ def estadisticos(df, columnas, labels):
         filename = f'Ploteo_{col}.pdf'
         plt.savefig(filename)
         print(f'Guardado: {filename}')
-        plt.show()
+        # plt.show()
 
 def Restas_principal(Ruta_Archivo_Principal,col_valor,col_altura,Ruta_XGM2019_0_719,Ruta_EARTH_0_2159,Ruta_EARTH_0_719):
     df_Original = lectura_txt2(Ruta_Archivo_Principal)

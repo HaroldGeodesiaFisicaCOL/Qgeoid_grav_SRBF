@@ -40,7 +40,7 @@ IMPORTE DE LA FUNCION PARA EL CÁLCULO DE LOS SESGOS MEDIANTE SRBF
 # =============================================================================
 # FUNCION NECESARIA PARA EL PASO 7.
 # =============================================================================
-from Funciones_Auxiliares.Paso7 import detect_outliers
+from .Funciones_Auxiliares.Paso7 import detect_outliers
 
 
 import pandas as pd
@@ -139,15 +139,15 @@ def procesamiento_aereos(
 
     alistamiento_principal(input_file,col_lat=col_lat,col_long=col_lon,col_altura=col_h,
                         ruta_sal=str(datos_matlab))
-    remover_puntual(out_dir=str(remover_dir),
-                    path_gfc_model1=str(path_gfc_model1),
-                    output_model1=str(remover_dir / "XGM2019_0_719"),
-                    path_gfc_model2=str(path_gfc_model2),
-                    output_model2=str(remover_dir / "dv_ell_earth2014_0_719"),
-                    path_gfc_model3=str(path_gfc_model3),
-                    output_model3=str(remover_dir / "dv_ell_earth2014_0_2159"),
-                    input_points=str(datos_matlab),
-                    graflab_path=str(graflab_path))
+    # remover_puntual(out_dir=str(remover_dir),
+    #                 path_gfc_model1=str(path_gfc_model1),
+    #                 output_model1=str(remover_dir / "XGM2019_0_719"),
+    #                 path_gfc_model2=str(path_gfc_model2),
+    #                 output_model2=str(remover_dir / "dv_ell_earth2014_0_719"),
+    #                 path_gfc_model3=str(path_gfc_model3),
+    #                 output_model3=str(remover_dir / "dv_ell_earth2014_0_2159"),
+    #                 input_points=str(datos_matlab),
+    #                 graflab_path=str(graflab_path))
 
     # Ahora se realiza el proceso de las restas ahora que se tienen las componentes de
     # Longitud de onda larga y longitud de onda corta
@@ -172,9 +172,9 @@ def procesamiento_aereos(
     labels =['$\\delta_g$','$\\delta_g - \\delta_gGGM$','$\\delta_g - \\delta_gGGM - \\delta_gGtopo$']
     estadisticos(df=df_removido, columnas=arreglo, labels=labels)
 
-    df_removido.to_csv(archivo_final_dir / "Archivo_Final/Datos_Aereos.txt", sep="\t", index=False)
+    df_removido.to_csv(archivo_final_dir / "Datos_Aereos.txt", sep="\t", index=False)
 
-    df_removido[[col_lat, col_lon, col_h, col_valor,"ERTM2160","XGM2019","EARTH2014","Pert_GGM",'Perturbaciones_residuales']].to_csv(
+    df_removido[[col_lat, col_lon, col_h, col_valor,"XGM2019","EARTH2014","Pert_GGM",'Perturbaciones_residuales']].to_csv(
         ruta_obs_final,
         sep="\t",
         index=False,
