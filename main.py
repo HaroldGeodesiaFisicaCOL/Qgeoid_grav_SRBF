@@ -38,6 +38,8 @@ from modules.Remove_module.Aereal_processing.Main_Procesamiento_aereos import (
     procesamiento_aereos,
 )
 
+from modules.Compute_module.Ejecutar_Pipeline_SRBF import ejecutar_pipeline_srbf
+
 #=============================================================================
 # DOWLOAND THE NECESSARY MODELS FOR THE GRAVITY REFINEMENT
 #=============================================================================
@@ -235,9 +237,45 @@ procesamiento_aereos(
 # SRBF kernel to compute the desing matrix A and B.
 # Then, we solve the system y = Ad, estimating the model parameters.
 # Finally, we use the estimated parameters and desing matrix B to compute the
-# residual anomalous gravity field.
+# residual anomalous gravity field. T = B\hat{d}
 # then, we do the Restore anomalous gravity field.
 # using the Bruns theorem we compute the Quasigeoid final model.
 #=============================================================================
 
+project_root = Path(__file__).resolve().parent
+lon_min, lon_max, lat_min, lat_max = 11, 19, 39.5, 44.5
+ejecutar_pipeline_srbf(
+    project_root=project_root,
 
+    freqs=["2190"],
+    resol="1",
+
+    lat_min=lat_min,
+    lat_max=lat_max,
+    lon_min=lon_min,
+    lon_max=lon_max,
+
+    apertura="0.326666666666666666666666666666",
+
+    puntos=(
+        project_root
+        / "modules"
+        / "Compute_module"
+        / "3_Observaciones"
+        / "terrestrial_data.txt"
+    ),
+    puntos_aero=(
+        project_root
+        / "modules"
+        / "Compute_module"
+        / "3_Observaciones"
+        / "airborne_data.txt"
+    ),
+
+    cases=["1VC","1VCLC"],
+
+    restore=True,
+    qgeoid=True,
+
+    force_mode="none",
+)
