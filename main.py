@@ -201,3 +201,29 @@ procesamiento_aereos(
     filter_data=False,
     subsampling=False,
 )
+
+#=============================================================================
+# If you want include other type of gravity observation, example: Altimetry Data.
+# You should include the Remove step like a airborne processing.
+# 'cause when we work with the marine gravity anomalies derived from altimetry data
+# we can´t use the grid model ERTM2160 or SRTM_v2_Gravity.
+#=============================================================================
+# print('Removing altimetry data...')
+# A_col_lat = "Lat"
+# A_col_lon = "Lon"
+# A_col_h = "h"
+# A_col_valor = r"gravity anomaly(mGal)"
+# procesamiento_aereos(
+#     input_file="modules/Remove_module/Initial_observation/altimetry_data.txt",
+#     col_lat=A_col_lat,
+#     col_lon=A_col_lon,
+#     col_h=A_col_h,
+#     col_valor=A_col_valor,
+#     path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
+#     path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_5480_plusGRS80.gfc",
+#     path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_5480_plusGRS80.gfc",
+#     ruta_obs_final="modules/Compute_module/3_Observaciones/altimetry_data.txt",
+#     graflab_path=str(graflab_path),
+#     filter_data=False,
+#     subsampling=False,
+# )
