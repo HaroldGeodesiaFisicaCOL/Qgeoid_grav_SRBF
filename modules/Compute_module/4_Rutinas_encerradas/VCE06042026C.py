@@ -4,7 +4,7 @@ from numpy.linalg import solve
 from tqdm import tqdm
 from datetime import datetime
 
-np.random.seed(42)
+np.random.seed(144)
 
 
 def random_sign_matrix(n, s):
