@@ -94,7 +94,6 @@ def procesamiento_terrestres(
         Ruta_ERTM2160=str(Ruta_ERTM2160),
     )
 
-    # Mapas GMT del comportamiento de los Outliers
     df_removido, df_outliers, epsilon_global = detect_outliers(
         df_removido,
         lat_col=col_lat,
