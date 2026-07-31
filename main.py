@@ -227,3 +227,17 @@ procesamiento_aereos(
 #     filter_data=False,
 #     subsampling=False,
 # )
+
+
+#=============================================================================
+# COMPUTE STEP
+# In this step, we compute the adjustem of parametric model using the
+# SRBF kernel to compute the desing matrix A and B.
+# Then, we solve the system y = Ad, estimating the model parameters.
+# Finally, we use the estimated parameters and desing matrix B to compute the
+# residual anomalous gravity field.
+# then, we do the Restore anomalous gravity field.
+# using the Bruns theorem we compute the Quasigeoid final model.
+#=============================================================================
+
+
