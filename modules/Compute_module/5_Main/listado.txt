@@ -1,2 +1,0 @@
-D:\25052026\6_Resultados\f3000\COMMON\matriz_diseno_f3000.npy	D:\25052026\3_Observaciones\Obs_Terr_DTU21Gra_Nosotros.txt	 Si
-D:\25052026\6_Resultados\f3000\COMMON\matriz_diseno_aero_f3000.npy	D:\25052026\3_Observaciones\Datos_Aereos_Sesg_900_5k.txt	Si
