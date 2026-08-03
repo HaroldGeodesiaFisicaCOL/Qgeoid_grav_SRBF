@@ -13,7 +13,7 @@ def write_graflab_wrapper_m(
     out_dir,
     *,
     m_filename,
-    graflab_path,                     
+    graflab_path,
     GM=3986004.415e8, R=6378136.3,
     nmin=0, nmax="nmaxGGM",
     ellipsoid=1, GGM_path=r"C:/dummy.gfc",
@@ -125,7 +125,7 @@ def remover_puntual(
     input_points,
     out_dir,
     graflab_path,
-    matlab_bin=r"C:/Program Files/MATLAB/R2025b/bin/matlab.exe",
+    matlab_bin=r"C:/Program Files/MATLAB/R2024b/bin/matlab.exe",
     nmin=0, nmax1=719, nmax2=719, nmax3=2159, ellipsoid=1,
 ):
     """

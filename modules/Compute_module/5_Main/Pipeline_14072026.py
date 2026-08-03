@@ -23,6 +23,8 @@ logging.basicConfig(
 logger = logging.getLogger("pipeline_robusto")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = BASE_DIR.parent.parent  # raíz del repo (Qgeoid_grav_SRBF)
+GRAFLAB_PATH = PROJECT_ROOT / "dependencies" / "Graflab"
 
 def R(*parts) -> Path:
     return (BASE_DIR.joinpath(*parts)).resolve()
@@ -92,7 +94,7 @@ class PipelineConfig:
 scripts = {
     "reuter":         R("4_Rutinas_encerradas", "ReuterGrid.py"),
     "diseno":         R("4_Rutinas_encerradas", "Calc_puntual_optimizado_partes.py"),
-    "graflab_path":   R("4_Rutinas_encerradas"),
+    "graflab_path":   GRAFLAB_PATH,
     "graflab_expand": R("4_Rutinas_encerradas", "GravLab_expand.py"),
     "vce":            R("4_Rutinas_encerradas", "VCE06042026C.py"),
     "pixeles":        R("4_Rutinas_encerradas", "generador_pixel.py"),
@@ -109,8 +111,8 @@ scripts = {
 }
 
 modelos_base = {
-    "srtm30":  R("1_Modelos", "modelo_SRTM", "SRTM_v7_Plus.tif"),
-    "EGM2008": R("1_Modelos", "modelo_EGM2008", "EGM2008.tif"),
+    "srtm30":  R("1_Modelos", "modelo_SRTM", "SRTM.tif"),
+    "EGM2008": R("1_Modelos", "modelo_EGM2008", "EGM96.tif"),
     "GGM":     R("1_Modelos", "modeloXGM2019", "XGM2019.gfc"),
     "Topo":    R("1_Modelos", "modelo_dv_ell_Earth2014", "dV_ELL_Earth2014_5480_plusGRS80.gfc"),
     "ERTM":    R("1_Modelos", "modeloERTM2160", "Anomalias_Altura_ERTM_2160.tif"),
@@ -239,6 +241,9 @@ def run_subprocess_capture(script: Path, descripcion: str, args: List[str], env=
     script = Path(script)
     args = [str(a) for a in args]
     cmd = [sys.executable, "-u", str(script), *args]
+    if env is None:
+        env = os.environ.copy()
+    env.setdefault("PYTHONIOENCODING", "utf-8")
     cmd_len = sum(len(x) + 1 for x in cmd)
     should_use_runpy = allow_runpy_if_long and platform.system().lower().startswith("win") and cmd_len > 7000
     if should_use_runpy:
@@ -275,7 +280,7 @@ def run_subprocess_capture(script: Path, descripcion: str, args: List[str], env=
             os.chdir(old_cwd)
     logger.info(f"Ejecutando subprocess: {descripcion}")
     try:
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True, env=env)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True, encoding="utf-8", errors="replace", env=env)
         out_lines: List[str] = []
         for line in proc.stdout:
             if line:
@@ -351,10 +356,10 @@ def construir_sigma2_init_list(listado_path: Path, use_ones: bool, sigma_file: P
             if len(cols) < 3:
                 continue
             ruta_obs, flag = cols[1], cols[2].strip().lower()
-            df_obs = pd.read_csv(ruta_obs, sep="\t")
-            if "Proyecto" not in df_obs.columns:
-                raise ValueError(f"No existe la columna 'Proyecto' en {ruta_obs}")
             if flag == "si":
+                df_obs = pd.read_csv(ruta_obs, sep="\t")
+                if "Proyecto" not in df_obs.columns:
+                    raise ValueError(f"No existe la columna 'Proyecto' en {ruta_obs}")
                 for proj in df_obs["Proyecto"].unique():
                     sigma_resultado.append("1" if use_ones else str(sigmas_map.get(proj, 1.0)))
             else:
@@ -527,7 +532,7 @@ def run_shared_vce(freq: str, use_ones: bool, sigma_file: Path, input_paths: Dic
         logger.info(msg)
         return shared_outputs, [msg]
     sigma2_init_list = construir_sigma2_init_list(input_paths["listado"], use_ones, sigma_file)
-    vce_args = ["--rutas_archivo","--col_val" ,str(input_paths["listado"]), "--sigma2_init_list", sigma2_init_list, "--sigma_mu2_init", "1.0", "--max_iter", "50", "--tol", "1e-11", "--num_trace_samples", "1", "--output_beta", str(shared_outputs["param_est"]), "--output_weights", str(shared_outputs["pesos"]), "--output_residuales", str(shared_outputs["residuos"]), "--output_normas", str(shared_outputs["normas"])]
+    vce_args = ["--rutas_archivo", str(input_paths["listado"]), "--sigma2_init_list", sigma2_init_list, "--sigma_mu2_init", "1.0", "--max_iter", "50", "--tol", "1e-11", "--num_trace_samples", "1", "--output_beta", str(shared_outputs["param_est"]), "--output_weights", str(shared_outputs["pesos"]), "--output_residuales", str(shared_outputs["residuos"]), "--output_normas", str(shared_outputs["normas"])]
     if boolCov:
         vce_args.extend(["--output_covariance", str(shared_outputs["vce_cov"])])
     rc, out = run_subprocess_capture(scripts["vce"], f"VCE_shared_{tag}", vce_args)
