@@ -9,9 +9,13 @@
 import os
 from pathlib import Path
 
+from pandas.core.col import col
+
 """
 IMPORTE DE FUNCIONES PARA EL PROCESO DE REMOVER
 """
+# Se importa la funcion que calcula las perturbaciones de gravedad
+from .Funciones_Auxiliares.gamma_teorico import calculo_perturbaciones
 # se importa el bloque de código el cuál genera el txt que se envía a graflab
 from .Funciones_Auxiliares.Alistastamiento_Graflab import alistamiento_principal
 # Se importa la función que genera las órdenes a Matlab para realizar el cálculo con los armónicos esféricos
@@ -59,7 +63,12 @@ def procesamiento_terrestres(
     graflab_path = Path(graflab_path).resolve()
 
     datos_matlab = remover_dir / "Datos_Terrestres_Matlab.txt"
-
+    calculo_perturbaciones(
+        str(ruta_datos_iniciales),
+        col_grav=col_valor,
+        col_lat=col_lat,
+        col_h=col_h,
+    )
     alistamiento_principal(
         str(ruta_datos_iniciales),
         col_lat,
@@ -68,17 +77,17 @@ def procesamiento_terrestres(
         ruta_sal=str(datos_matlab),
     )
 
-    # remover_puntual(
-    #     out_dir=str(remover_dir),
-    #     path_gfc_model1=str(path_gfc_model1),
-    #     output_model1=str(remover_dir / "XGM2019_0_719"),
-    #     path_gfc_model2=str(path_gfc_model2),
-    #     output_model2=str(remover_dir / "dv_ell_earth2014_0_719"),
-    #     path_gfc_model3=str(path_gfc_model3),
-    #     output_model3=str(remover_dir / "dv_ell_earth2014_0_2159"),
-    #     input_points=str(datos_matlab),
-    #     graflab_path=str(graflab_path),
-    # )
+    remover_puntual(
+        out_dir=str(remover_dir),
+        path_gfc_model1=str(path_gfc_model1),
+        output_model1=str(remover_dir / "XGM2019_0_719"),
+        path_gfc_model2=str(path_gfc_model2),
+        output_model2=str(remover_dir / "dv_ell_earth2014_0_719"),
+        path_gfc_model3=str(path_gfc_model3),
+        output_model3=str(remover_dir / "dv_ell_earth2014_0_2159"),
+        input_points=str(datos_matlab),
+        graflab_path=str(graflab_path),
+    )
 
     # Ahora se realiza el proceso de las restas ahora que se tienen las componentes de
     # Longitud de onda larga y longitud de onda corta

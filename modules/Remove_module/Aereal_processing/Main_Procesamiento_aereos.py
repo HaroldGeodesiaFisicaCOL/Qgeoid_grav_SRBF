@@ -10,9 +10,14 @@
 # - Plotting the histograms of the processed data.
 # =============================================================================
 import os
+from numba.core import base
 import pandas as pd
 from pathlib import Path
 
+from pandas.core.col import col
+from plotly import data
+
+from .Funciones_Auxiliares.gamma_teorico import calculo_perturbaciones
 """Funcion para realizar el filtrado Gaussiano esférico de aerogravimetría por líneas."""
 from .Funciones_Auxiliares.FiltradoOptimoParser import GaussianFilter
 """"Funcion para relaizar las diferencias del SaTop criollo con las perturbaciones Aéreas"""
@@ -56,6 +61,7 @@ def procesamiento_aereos(
     path_gfc_model3,
     ruta_obs_final,
     graflab_path,
+    col_valor_filtrado=None,
     filter_data: bool = False,
     filter_kwargs: dict | None = None,
     subsampling: bool = False,
@@ -67,6 +73,8 @@ def procesamiento_aereos(
     remover_dir = base_dir / "Remover"
     visualizacion_dir = base_dir / "Visualizacion"
     archivo_final_dir = base_dir / "Archivo_Final"
+    data_filtering = base_dir / "Data_Filtering"
+    data_subampling = base_dir / "Data_Submuestrado"
 
     os.makedirs(remover_dir, exist_ok=True)
     os.makedirs(visualizacion_dir, exist_ok=True)
@@ -84,7 +92,10 @@ def procesamiento_aereos(
     subsampling_kwargs = subsampling_kwargs or {}
 
     Aero_df = None
-
+    #=============================================================================
+    # Cálculo de las perturbaciones de gravedad aéreas.
+    #=============================================================================
+    calculo_perturbaciones(ruta_datos_iniciales, col_grav=col_valor, col_lat=col_lat, col_h=col_h)
     # =========================================================================
     # Filtrado gaussiano de paso bajo
     # =========================================================================
@@ -93,7 +104,7 @@ def procesamiento_aereos(
 
         default_filter_args = {
             'input_file': ruta_datos_iniciales,
-            'output_dir': 'Datos_filtrados/Datos_Aereos_Filtrado.txt',
+            'output_dir': data_filtering,
             'project_column': "Proyecto",
             'line_column': "num_linea",
             'lat_column': "latitud",
@@ -108,6 +119,7 @@ def procesamiento_aereos(
         }
         default_filter_args.update(filter_kwargs)
         Aero_df, reporte_filtro = GaussianFilter(**default_filter_args)
+        col_valor = col_valor_filtrado
         print("Filtering done.")
 
     # =========================================================================
@@ -124,8 +136,8 @@ def procesamiento_aereos(
 
         default_subsampling_args = {
             'df': Aero_df,
-            'output_file': 'Submuestreo/Aero_grav_obs_Sin_NEXEN_2km.txt',
-            'report_file': 'Submuestreo/Informe_Muestreo.txt',
+            'output_file': data_subampling / "airborne_2km.txt",
+            'report_file': data_subampling / "Informe_Muestreo.txt",
         }
         default_subsampling_args.update(subsampling_kwargs)
 
@@ -135,19 +147,22 @@ def procesamiento_aereos(
             )
 
         sample_by_distance(**default_subsampling_args)
+        ruta_datos_iniciales = data_subampling / "airborne_2km.txt"
+        input_file = ruta_datos_iniciales
         print("Subsampling done.")
+        print(f"Input file: {input_file}")
 
     alistamiento_principal(input_file,col_lat=col_lat,col_long=col_lon,col_altura=col_h,
                         ruta_sal=str(datos_matlab))
-    # remover_puntual(out_dir=str(remover_dir),
-    #                 path_gfc_model1=str(path_gfc_model1),
-    #                 output_model1=str(remover_dir / "XGM2019_0_719"),
-    #                 path_gfc_model2=str(path_gfc_model2),
-    #                 output_model2=str(remover_dir / "dv_ell_earth2014_0_719"),
-    #                 path_gfc_model3=str(path_gfc_model3),
-    #                 output_model3=str(remover_dir / "dv_ell_earth2014_0_2159"),
-    #                 input_points=str(datos_matlab),
-    #                 graflab_path=str(graflab_path))
+    remover_puntual(out_dir=str(remover_dir),
+                    path_gfc_model1=str(path_gfc_model1),
+                    output_model1=str(remover_dir / "XGM2019_0_719"),
+                    path_gfc_model2=str(path_gfc_model2),
+                    output_model2=str(remover_dir / "dv_ell_earth2014_0_719"),
+                    path_gfc_model3=str(path_gfc_model3),
+                    output_model3=str(remover_dir / "dv_ell_earth2014_0_2159"),
+                    input_points=str(datos_matlab),
+                    graflab_path=str(graflab_path))
 
     # Ahora se realiza el proceso de las restas ahora que se tienen las componentes de
     # Longitud de onda larga y longitud de onda corta
