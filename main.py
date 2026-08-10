@@ -6,6 +6,7 @@ import numpy as np
 from pathlib import Path
 
 from pandas.core.col import col
+from pandas.core.frame import Accessor
 
 
 from modules.Download_spherical_harmonics.Dowloand_grid_Model import (
@@ -79,10 +80,21 @@ descargar_modelo_icgem(modelo=Gtopo2,grado=5480,
 print('Dowloand the Gtopo model ERTM2190...')
 #This parameters define the area to download for the grid model for the topographic geopotential model
 # in this case we use de ERTM2160, but the SRTMv2_gravity it's a other option.
+
+#=============================================================================
+#Configuration Italian Model
+#=============================================================================
+# lat_min = 34
+# lat_max = 50
+# lon_min = 5
+# lon_max = 25
+#=============================================================================
+#Configuration Colorado Model
+#=============================================================================
 lat_min = 34
-lat_max = 50
-lon_min = 5
-lon_max = 25
+lat_max = 40.2
+lon_min = -110.5
+lon_max = -100.7
 # Dowloand the model ERTM2160's zeta component, for the restore procedure.
 # base_url_zeta = "https://ddfe.curtin.edu.au/gravitymodels/ERTM2160/data/geoid"
 base_url_zeta = "https://ddfe.blazejbucha.com/models/ERTM2160/data/geoid/"
@@ -93,9 +105,9 @@ os.makedirs(base_local_path_zeta, exist_ok=True)
 os.makedirs(base_local_path_gravity, exist_ok=True)
 
 print('Downloading ERTM2160 geoid component...')
-# generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_zeta, base_local_path_zeta)
+generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_zeta, base_local_path_zeta)
 print('Downloading ERTM2160 gravity component...')
-# generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_gravity, base_local_path_gravity)
+generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_gravity, base_local_path_gravity)
 
 # generate the grid model of height anomaly (m), associated with Topographic effects.
 generar_modelo_ertm2160(
@@ -113,19 +125,19 @@ generar_modelo_ertm2160(
 # DOWLOAND THE SRTM MODEL, this model will be combinate whit EGM96 for the grid final model elipsoidal heights.
 print('Downloading SRTM model...')
 os.makedirs("modules/Compute_module/1_Modelos/modelo_SRTM/data", exist_ok=True)
-# generar_modelo_srtm(
-#     lon_min, lon_max, lat_min, lat_max,
-# )
+generar_modelo_srtm(
+    lon_min, lon_max, lat_min, lat_max,
+)
 # Delete the temporary folder to models ERTM and SRTM
 # os.rmdir("modules/Compute_module/1_Modelos/modelo_SRTM/data")
 # os.rmdir("modules/Compute_module/1_Modelos/modeloERTM2160/data")
 
 # Download the Earth surface model, this model will be used for the spherical harmonics synthesis for the EGM96 model.
 print('Downloading Earth surface model...')
-dowloand_Earth_surface(
-    link_carpeta="https://drive.google.com/drive/folders/1P5W_ECmnqjChDs-GbN_jbfNm4okWjyIN?usp=sharing",
-    carpeta_destino="dependencies/Graflab"
-)
+# dowloand_Earth_surface(
+#     link_carpeta="https://drive.google.com/drive/folders/1P5W_ECmnqjChDs-GbN_jbfNm4okWjyIN?usp=sharing",
+#     carpeta_destino="dependencies/Graflab"
+# )
 
 # Spherical harmonics synthesis model EGM96 (First download the spherical harmonics)
 print('Dowloand the GGM EGM96 model for the heights whit SRTM model...')
@@ -156,22 +168,43 @@ expansion_EGM96(
     espaciado=1 / 60,
 )
 
-#=============================================================================
+# =============================================================================
 # REMOVE STEP FOR THE GRAVITY OBSERVATIONS
 # First, the user have to know the number of technique's  gravity observations
 # For example, in the case of Italian model we have 2 techniques avalaible this repository: Terrestrial and aereal.
 # for the colombian model we have 3 techniques: Terrestrial, aereal and altimetry.
-#=============================================================================
+# =============================================================================
 
 # For the terrestrial technique :
 # Include the column names for latitude, longitude, height, and value
 print('Removing terrestrial data...')
-T_col_lat = "Lat"
-T_col_lon = "Lon"
-T_col_h = "h"
-T_col_valor = r"gravity disturbance(mGal)"
+# Italian model:
+# T_col_lat = "Lat"
+# T_col_lon = "Lon"
+# T_col_h = "h"
+# T_col_valor = r"gravity disturbance(mGal)"
+
 # procesamiento_terrestres(
 #     ruta_datos_iniciales="modules/Remove_module/Initial_observation/terrestrial_data.txt",
+#     col_lat=T_col_lat,
+#     col_lon=T_col_lon,
+#     col_h=T_col_h,
+#     col_valor=T_col_valor,
+#     path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
+#     path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
+#     path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
+#     Ruta_ERTM2160="modules/Compute_module/1_Modelos/modeloERTM2160/Perturbaciones_Gravedad_ERTM_2160.tif",
+#     ruta_obs_final="modules/Compute_module/3_Observaciones/terrestrial_data.txt",
+#     graflab_path=str(graflab_path),
+# )
+
+# Colorado model:
+T_col_lat = r"latitude_deg"
+T_col_lon = r"longitude_deg"
+T_col_h = "height_m"
+T_col_valor = r"gravity_mGal"
+# procesamiento_terrestres(
+#     ruta_datos_iniciales="modules/Remove_module/Initial_observation/Colorado_gravity_data.txt",
 #     col_lat=T_col_lat,
 #     col_lon=T_col_lon,
 #     col_h=T_col_h,
@@ -187,10 +220,12 @@ T_col_valor = r"gravity disturbance(mGal)"
 # For the Airborne technique:
 # Include the column names for latitude, longitude, height, and value
 print('Removing airborne data...')
-A_col_lat = "Lat"
-A_col_lon = "Lon"
-A_col_h = "h"
-A_col_valor = r"gravity disturbance(mGal)"
+# Italian model
+# A_col_lat = "Lat"
+# A_col_lon = "Lon"
+# A_col_h = "h"
+# A_col_valor = r"gravity disturbance(mGal)"
+
 # procesamiento_aereos(
 #     input_file="modules/Remove_module/Initial_observation/airborne_data.txt",
 #     col_lat=A_col_lat,
@@ -204,6 +239,41 @@ A_col_valor = r"gravity disturbance(mGal)"
 #     graflab_path=str(graflab_path),
 #     filter_data=False,
 #     subsampling=False,
+# )
+
+# Colorado model:
+A_col_lat = r"lat(deg)"
+A_col_lon = r"lon(deg)"
+A_col_h = "h(m)"
+A_col_valor = r"g(mGal)"
+A_col_Num_line = r"line"
+A_col_group = r"block"
+A_col_valor_filtrado = r"g(mGal)_filtrado"
+# procesamiento_aereos(
+#     input_file="modules/Remove_module/Initial_observation/GRAVD_ms05_median_debiased_1hz.txt",
+#     col_lat=A_col_lat,
+#     col_lon=A_col_lon,
+#     col_h=A_col_h,
+#     col_valor=A_col_valor,
+#     col_valor_filtrado=A_col_valor_filtrado,
+#     path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
+#     path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_5480_plusGRS80.gfc",
+#     path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_5480_plusGRS80.gfc",
+#     ruta_obs_final="modules/Compute_module/3_Observaciones/airborne_data.txt",
+#     graflab_path=str(graflab_path),
+#     filter_data=True,
+#     filter_kwargs={'project_column': A_col_group,
+#                    'line_column': A_col_Num_line,
+#                    'lat_column': A_col_lat,
+#                    'lon_column': A_col_lon,
+#                    'input_column': A_col_valor,
+#                    'output_column': A_col_valor_filtrado},
+#     subsampling=True,
+#     subsampling_kwargs={'sample_distance': 2000,
+#                         'col_group': A_col_group,
+#                         'col_lat': A_col_lat,
+#                         'col_lon': A_col_lon,
+#                         'Num_line': A_col_Num_line},
 # )
 
 #=============================================================================
@@ -245,11 +315,14 @@ A_col_valor = r"gravity disturbance(mGal)"
 #=============================================================================
 
 project_root = Path(__file__).resolve().parent
-lon_min, lon_max, lat_min, lat_max = 11, 19, 39.5, 44.5
+# Italian model:
+# lon_min, lon_max, lat_min, lat_max = 11, 19, 39.5, 44.5
+# Colorado model:
+lon_min, lon_max, lat_min, lat_max = -109, -103, 36, 39
 ejecutar_pipeline_srbf(
     project_root=project_root,
 
-    freqs=["720"],
+    freqs=["4000"],
     resol="1",
 
     lat_min=lat_min,
@@ -266,9 +339,9 @@ ejecutar_pipeline_srbf(
         / "3_Observaciones"
         / "terrestrial_data.txt"
     ),
-    obs_lat_col="Lat",
-    obs_lon_col="Lon",
-    obs_alt_col="h",
+    obs_lat_col="latitude_deg",
+    obs_lon_col="longitude_deg",
+    obs_alt_col="height_m",
     puntos_aero=(
         project_root
         / "modules"
@@ -276,9 +349,9 @@ ejecutar_pipeline_srbf(
         / "3_Observaciones"
         / "airborne_data.txt"
     ),
-    aero_lat_col="Lat",
-    aero_lon_col="Lon",
-    aero_alt_col="h",
+    aero_lat_col="lat(deg)",
+    aero_lon_col="lon(deg)",
+    aero_alt_col="h(m)",
     cases=["1VC","1VCLC"],
 
     restore=True,
