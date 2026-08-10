@@ -7,7 +7,7 @@ from datetime import datetime
 import time
 from tqdm import tqdm
 import os
-from numpy.lib.format import open_memmap  
+from numpy.lib.format import open_memmap
 
 # Parámetros geodésicos
 a = 6378137.0
@@ -92,12 +92,12 @@ def calcular_matriz_diseno_gpu(
     lon_m = np.radians(m[col_lon_malla].values)
 
     # Constantes precalculadas
-    n = cp.arange(num_filas, dtype=cp.float64)
+    n = cp.arange(num_filas + 1, dtype=cp.float64)
     base = (2*n + 1)*(n+1) if para_pixeles == 0 else (2*n + 1)
     coefs_gpu = base * Filtro(filtro, num_filas)
 
     # Precálculo c1 y c2
-    k = np.arange(num_filas)
+    k = np.arange(num_filas + 1)
     c1_gpu = cp.asarray(((2.0*k + 1.0) / (k + 1.0)).astype(np.float64))
     c2_gpu = cp.asarray(((k + 1.0) / (k + 2.0)).astype(np.float64))
 
@@ -142,7 +142,7 @@ def calcular_matriz_diseno_gpu(
         grid  = ((n_b + block[0] - 1)//block[0], (n_malla + block[1] - 1)//block[1])
 
         module(grid, block,
-            (R_norm_b, c1_gpu, c2_gpu, np.int32(num_filas), X_b,
+            (R_norm_b, c1_gpu, c2_gpu, np.int32(num_filas + 1), X_b,
              np.int32(n_b), np.int32(n_malla), D_b))
 
         # Escribir bloque en el archivo .npy sin cargar todo en RAM
