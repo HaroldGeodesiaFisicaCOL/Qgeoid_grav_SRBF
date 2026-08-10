@@ -1,5 +1,5 @@
 import pandas as pd
-import os 
+import os
 
 def lectura_txt(ruta):
     return pd.read_csv(ruta,sep='\t',engine='python')
@@ -12,6 +12,7 @@ def Alistamiento(df,arreglo,ruta):
 
 def alistamiento_principal(ruta_datos,col_lat,col_long,col_altura,ruta_sal):
     df_terrestres = lectura_txt(ruta_datos)
+    print(df_terrestres.columns)
     arreglo=[col_lat,col_long,col_altura]
     df_terrestres = df_terrestres[arreglo]
     Alistamiento(df_terrestres,arreglo,ruta_sal)
