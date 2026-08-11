@@ -189,21 +189,21 @@ print('Removing terrestrial data...')
 # Colorado model:
 T_col_lat = r"latitude_deg"
 T_col_lon = r"longitude_deg"
-T_col_h = "height_m"
+T_col_h = "h"
 T_col_valor = r"gravity_mGal"
-# procesamiento_terrestres(
-#     ruta_datos_iniciales="modules/Remove_module/Initial_observation/Colorado_gravity_data.txt",
-#     col_lat=T_col_lat,
-#     col_lon=T_col_lon,
-#     col_h=T_col_h,
-#     col_valor=T_col_valor,
-#     path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
-#     path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
-#     path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
-#     Ruta_ERTM2160="modules/Compute_module/1_Modelos/modeloERTM2160/Perturbaciones_Gravedad_ERTM_2160.tif",
-#     ruta_obs_final="modules/Compute_module/3_Observaciones/terrestrial_data.txt",
-#     graflab_path=str(graflab_path),
-# )
+procesamiento_terrestres(
+    ruta_datos_iniciales="modules/Remove_module/Initial_observation/Colorado_gravity_data.txt",
+    col_lat=T_col_lat,
+    col_lon=T_col_lon,
+    col_h=T_col_h,
+    col_valor=T_col_valor,
+    path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
+    path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
+    path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
+    Ruta_ERTM2160="modules/Compute_module/1_Modelos/modeloERTM2160/Perturbaciones_Gravedad_ERTM_2160.tif",
+    ruta_obs_final="modules/Compute_module/3_Observaciones/terrestrial_data.txt",
+    graflab_path=str(graflab_path),
+)
 
 # For the Airborne technique:
 # Include the column names for latitude, longitude, height, and value
