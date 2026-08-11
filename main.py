@@ -1,7 +1,6 @@
 # In this script, the first part consist in downloading the spherical harmonics coefficients of the
 # geopotential models, long wavelegth (GGM) and short wavelegth (Gtopo).
 import os
-from token import AMPEREQUAL
 import numpy as np
 from pathlib import Path
 
@@ -44,14 +43,16 @@ from modules.Remove_module.Aereal_processing.Main_Procesamiento_aereos import (
 from modules.Compute_module.Ejecutar_Pipeline_SRBF import ejecutar_pipeline_srbf
 
 #=============================================================================
-# DOWLOAND THE NECESSARY MODELS FOR THE GRAVITY REFINEMENT
+# DOWLOAND THE NECESSARY MODELS FOR THE GRAVITY REFINEMENT,
+# In the first part we download the spherical harmonics coefficients of
+# the GGM and spherical and grid topographic models.
 #=============================================================================
 
 os.makedirs('modules/Compute_module/1_Modelos/modeloXGM2019',exist_ok=True)
 os.makedirs('modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014',exist_ok=True)
-GGM = 'XGM2019' # Name of the GGM model
-Gtopo1 = 'dV_ELL_Earth2014_plusGRS80' # Name of the topographic model
-Gtopo2 = 'dV_ELL_Earth2014_5480_plusGRS80' # Name of the topographic model
+GGM = 'XGM2019' # Name of the GGM model, in thi case we use the eXperimental Geopotential Model 2019
+Gtopo1 = 'dV_ELL_Earth2014_plusGRS80' # Name of the topographic model, Max d/o
+Gtopo2 = 'dV_ELL_Earth2014_5480_plusGRS80' # Name of the topographic model, Max d/o 5480
 GGM_EGM96 = 'EGM96' # Name of the geoid model for the DEM (Digital Elevation Model) in this case SRTM
 
 print('Dowloand the GGM model...')
@@ -82,27 +83,27 @@ print('Dowloand the Gtopo model ERTM2190...')
 # in this case we use de ERTM2160, but the SRTMv2_gravity it's a other option.
 
 #=============================================================================
-#Configuration Italian Model
-#=============================================================================
-# lat_min = 34
-# lat_max = 50
-# lon_min = 5
-# lon_max = 25
-#=============================================================================
-#Configuration Colorado Model
+#Configuration Colorado Model, this limits the area to download for the grid model
+# for the topographic geopotential model
 #=============================================================================
 lat_min = 34
 lat_max = 40.2
 lon_min = -110.5
 lon_max = -100.7
+
 # Dowloand the model ERTM2160's zeta component, for the restore procedure.
-# base_url_zeta = "https://ddfe.curtin.edu.au/gravitymodels/ERTM2160/data/geoid"
-base_url_zeta = "https://ddfe.blazejbucha.com/models/ERTM2160/data/geoid/"
-base_url_gravity = "https://ddfe.blazejbucha.com/models/ERTM2160/data/dg/"
-base_local_path_zeta = r"modules/Compute_module/1_Modelos/modeloERTM2160/data/geoid"
-base_local_path_gravity = r"modules/Compute_module/1_Modelos/modeloERTM2160/data/dg"
-os.makedirs(base_local_path_zeta, exist_ok=True)
-os.makedirs(base_local_path_gravity, exist_ok=True)
+# Dowloand the model ERTM2160's gravity component, for the remove procedure.
+
+# base_url_zeta = "https://ddfe.curtin.edu.au/gravitymodels/ERTM2160/data/geoid" # Curtin University URL
+# # base_url_gravity = "https://ddfe.curtin.edu.au/gravitymodels/ERTM2160/data/dg" # Curtin University URL
+
+base_url_zeta = "https://ddfe.blazejbucha.com/models/ERTM2160/data/geoid/" # Blazej Bucha URL
+base_url_gravity = "https://ddfe.blazejbucha.com/models/ERTM2160/data/dg/" # Blazej Bucha URL
+base_local_path_zeta = r"modules/Compute_module/1_Modelos/modeloERTM2160/data/geoid" # Local path for the zeta component
+base_local_path_gravity = r"modules/Compute_module/1_Modelos/modeloERTM2160/data/dg" # Local path for the gravity component
+
+os.makedirs(base_local_path_zeta, exist_ok=True) # Create the local path for the zeta component
+os.makedirs(base_local_path_gravity, exist_ok=True) # Create the local path for the gravity component
 
 print('Downloading ERTM2160 geoid component...')
 generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_zeta, base_local_path_zeta)
@@ -116,6 +117,7 @@ generar_modelo_ertm2160(
     outputfile='modules/Compute_module/1_Modelos/modeloERTM2160/Anomalias_Altura_ERTM_2160.tif'
     )
 
+# generate the grid model of gravity disturbance (m), associated with Topographic effects.
 generar_modelo_ertm2160(
     'gravity', lon_min,lon_max, lat_min, lat_max,
     1.0, 1.0, "modules/Compute_module/1_Modelos/modeloERTM2160/data", np.nan, 'cubic',
@@ -128,18 +130,21 @@ os.makedirs("modules/Compute_module/1_Modelos/modelo_SRTM/data", exist_ok=True)
 generar_modelo_srtm(
     lon_min, lon_max, lat_min, lat_max,
 )
-# Delete the temporary folder to models ERTM and SRTM
+# Delete the temporary folder to models ERTM and SRTM, this folders contain the raw data (.dg (gravity disturbance),
+# .ha(height anomaly) and .hgt (height for SRTM model))
 # os.rmdir("modules/Compute_module/1_Modelos/modelo_SRTM/data")
 # os.rmdir("modules/Compute_module/1_Modelos/modeloERTM2160/data")
 
 # Download the Earth surface model, this model will be used for the spherical harmonics synthesis for the EGM96 model.
+# We use the model Earth2014.SUR2014.degree10800.bshc, for more information visit: https://ddfe.blazejbucha.com/models/Earth2014/data_1min/shcs_to10800
 print('Downloading Earth surface model...')
-# dowloand_Earth_surface(
-#     link_carpeta="https://drive.google.com/drive/folders/1P5W_ECmnqjChDs-GbN_jbfNm4okWjyIN?usp=sharing",
-#     carpeta_destino="dependencies/Graflab"
-# )
+dowloand_Earth_surface(
+    link_carpeta="https://drive.google.com/drive/folders/1P5W_ECmnqjChDs-GbN_jbfNm4okWjyIN?usp=sharing",
+    carpeta_destino="dependencies/Graflab"
+)
 
-# Spherical harmonics synthesis model EGM96 (First download the spherical harmonics)
+# Spherical harmonics synthesis model EGM96 (First download the spherical harmonics),
+# If you have already downloaded the model, you can skip this step. and the SRTM dowloand step.
 print('Dowloand the GGM EGM96 model for the heights whit SRTM model...')
 descargar_modelo_icgem(modelo=GGM_EGM96,grado=360,
                             ruta='modules/Compute_module/1_Modelos/modelo_EGM2008',
@@ -148,7 +153,7 @@ descargar_modelo_icgem(modelo=GGM_EGM96,grado=360,
                             timeout=120,
                             max_reintentos=8,)
 
-# Spherical harmonics expansion modelo EGM96
+# Spherical harmonics expansion EGM96 model
 print('Expanding the GGM EGM96 model for the heights whit SRTM model...')
 project_root = Path(__file__).resolve().parent
 graflab_path = project_root / "dependencies" / "Graflab"
@@ -171,32 +176,15 @@ expansion_EGM96(
 # =============================================================================
 # REMOVE STEP FOR THE GRAVITY OBSERVATIONS
 # First, the user have to know the number of technique's  gravity observations
-# For example, in the case of Italian model we have 2 techniques avalaible this repository: Terrestrial and aereal.
+# For example, in the case of Colorado model we have 2 techniques avalaible this repository: Terrestrial and aereal.
 # for the colombian model we have 3 techniques: Terrestrial, aereal and altimetry.
+# The gravity observation the colorado model
+# are stored in the folder "modules/Remove_module/Initial_observation".
 # =============================================================================
 
 # For the terrestrial technique :
 # Include the column names for latitude, longitude, height, and value
 print('Removing terrestrial data...')
-# Italian model:
-# T_col_lat = "Lat"
-# T_col_lon = "Lon"
-# T_col_h = "h"
-# T_col_valor = r"gravity disturbance(mGal)"
-
-# procesamiento_terrestres(
-#     ruta_datos_iniciales="modules/Remove_module/Initial_observation/terrestrial_data.txt",
-#     col_lat=T_col_lat,
-#     col_lon=T_col_lon,
-#     col_h=T_col_h,
-#     col_valor=T_col_valor,
-#     path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
-#     path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
-#     path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_plusGRS80.gfc",
-#     Ruta_ERTM2160="modules/Compute_module/1_Modelos/modeloERTM2160/Perturbaciones_Gravedad_ERTM_2160.tif",
-#     ruta_obs_final="modules/Compute_module/3_Observaciones/terrestrial_data.txt",
-#     graflab_path=str(graflab_path),
-# )
 
 # Colorado model:
 T_col_lat = r"latitude_deg"
@@ -220,26 +208,6 @@ T_col_valor = r"gravity_mGal"
 # For the Airborne technique:
 # Include the column names for latitude, longitude, height, and value
 print('Removing airborne data...')
-# Italian model
-# A_col_lat = "Lat"
-# A_col_lon = "Lon"
-# A_col_h = "h"
-# A_col_valor = r"gravity disturbance(mGal)"
-
-# procesamiento_aereos(
-#     input_file="modules/Remove_module/Initial_observation/airborne_data.txt",
-#     col_lat=A_col_lat,
-#     col_lon=A_col_lon,
-#     col_h=A_col_h,
-#     col_valor=A_col_valor,
-#     path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
-#     path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_5480_plusGRS80.gfc",
-#     path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_5480_plusGRS80.gfc",
-#     ruta_obs_final="modules/Compute_module/3_Observaciones/airborne_data.txt",
-#     graflab_path=str(graflab_path),
-#     filter_data=False,
-#     subsampling=False,
-# )
 
 # Colorado model:
 A_col_lat = r"lat(deg)"
@@ -249,32 +217,32 @@ A_col_valor = r"g(mGal)"
 A_col_Num_line = r"line"
 A_col_group = r"block"
 A_col_valor_filtrado = r"g(mGal)_filtrado"
-# procesamiento_aereos(
-#     input_file="modules/Remove_module/Initial_observation/GRAVD_ms05_median_debiased_1hz.txt",
-#     col_lat=A_col_lat,
-#     col_lon=A_col_lon,
-#     col_h=A_col_h,
-#     col_valor=A_col_valor,
-#     col_valor_filtrado=A_col_valor_filtrado,
-#     path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
-#     path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_5480_plusGRS80.gfc",
-#     path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_5480_plusGRS80.gfc",
-#     ruta_obs_final="modules/Compute_module/3_Observaciones/airborne_data.txt",
-#     graflab_path=str(graflab_path),
-#     filter_data=True,
-#     filter_kwargs={'project_column': A_col_group,
-#                    'line_column': A_col_Num_line,
-#                    'lat_column': A_col_lat,
-#                    'lon_column': A_col_lon,
-#                    'input_column': A_col_valor,
-#                    'output_column': A_col_valor_filtrado},
-#     subsampling=True,
-#     subsampling_kwargs={'sample_distance': 2000,
-#                         'col_group': A_col_group,
-#                         'col_lat': A_col_lat,
-#                         'col_lon': A_col_lon,
-#                         'Num_line': A_col_Num_line},
-# )
+procesamiento_aereos(
+    input_file="modules/Remove_module/Initial_observation/GRAVD_ms05_median_debiased_1hz.txt",
+    col_lat=A_col_lat,
+    col_lon=A_col_lon,
+    col_h=A_col_h,
+    col_valor=A_col_valor,
+    col_valor_filtrado=A_col_valor_filtrado,
+    path_gfc_model1="modules/Compute_module/1_Modelos/modeloXGM2019/XGM2019.gfc",
+    path_gfc_model2="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_5480_plusGRS80.gfc",
+    path_gfc_model3="modules/Compute_module/1_Modelos/modelo_dv_ell_Earth2014/dV_ELL_Earth2014_5480_plusGRS80.gfc",
+    ruta_obs_final="modules/Compute_module/3_Observaciones/airborne_data.txt",
+    graflab_path=str(graflab_path),
+    filter_data=True,
+    filter_kwargs={'project_column': A_col_group,
+                   'line_column': A_col_Num_line,
+                   'lat_column': A_col_lat,
+                   'lon_column': A_col_lon,
+                   'input_column': A_col_valor,
+                   'output_column': A_col_valor_filtrado},
+    subsampling=True,
+    subsampling_kwargs={'sample_distance': 1000,
+                        'col_group': A_col_group,
+                        'col_lat': A_col_lat,
+                        'col_lon': A_col_lon,
+                        'Num_line': A_col_Num_line},
+)
 
 #=============================================================================
 # If you want include other type of gravity observation, example: Altimetry Data.
@@ -315,14 +283,12 @@ A_col_valor_filtrado = r"g(mGal)_filtrado"
 #=============================================================================
 
 project_root = Path(__file__).resolve().parent
-# Italian model:
-# lon_min, lon_max, lat_min, lat_max = 11, 19, 39.5, 44.5
 # Colorado model:
 lon_min, lon_max, lat_min, lat_max = -109, -103, 36, 39
 ejecutar_pipeline_srbf(
     project_root=project_root,
 
-    freqs=["4000"],
+    freqs=["5600"],
     resol="1",
 
     lat_min=lat_min,
