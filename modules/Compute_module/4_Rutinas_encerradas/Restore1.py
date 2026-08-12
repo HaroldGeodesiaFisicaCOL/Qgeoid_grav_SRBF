@@ -166,19 +166,34 @@ def restore_iterativo(df: pd.DataFrame, tolerancia: float, max_iter: int) -> pd.
         + df["anom_ERTM"]
     )
 
-    for _ in range(int(max_iter)):
+    for k in range(int(max_iter)):
         zeta_old = df["zeta"].copy()
         Hn = df["altura"] - df["zeta"]
 
-        df["gamma_h"] = gamma_h(df["Latitud"].values, df["gamma_0"].values, Hn.values)
+        df["gamma_h"] = gamma_h(
+            df["Latitud"].values,
+            df["gamma_0"].values,
+            Hn.values
+        )
+
         df["zeta"] = (
             (df["Potencial_Perturbador"] + df["anom_XGM"] + df["anom_EARTH2014"])
             / (df["gamma_h"] / 1e5)
             + df["anom_ERTM"]
         )
 
-        if np.max(np.abs(df["zeta"] - zeta_old)) < tolerancia:
+        error = np.max(np.abs(df["zeta"] - zeta_old))
+
+        if error < tolerancia:
+            print(f"Convergió en {k + 1} iteraciones.", flush=True)
+            print(f"Error final: {error:.3e}", flush=True)
+            print(f"Tolerancia: {tolerancia:.3e}", flush=True)
             break
+
+    else:
+        print(f"No convergió después de {max_iter} iteraciones.", flush=True)
+        print(f"Error final: {error:.3e}", flush=True)
+        print(f"Tolerancia requerida: {tolerancia:.3e}", flush=True)
 
     df["anom_res"] = df["zeta"]
     return df
