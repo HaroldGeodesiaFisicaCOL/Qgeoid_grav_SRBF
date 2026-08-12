@@ -3,10 +3,7 @@
 import os
 import numpy as np
 from pathlib import Path
-
-from pandas.core.col import col
-from pandas.core.frame import Accessor
-
+import shutil
 
 from modules.Download_spherical_harmonics.Dowloand_grid_Model import (
     dowloand_all_folder,
@@ -132,8 +129,8 @@ generar_modelo_srtm(
 )
 # Delete the temporary folder to models ERTM and SRTM, this folders contain the raw data (.dg (gravity disturbance),
 # .ha(height anomaly) and .hgt (height for SRTM model))
-# os.rmdir("modules/Compute_module/1_Modelos/modelo_SRTM/data")
-# os.rmdir("modules/Compute_module/1_Modelos/modeloERTM2160/data")
+# shutil.rmtree("modules/Compute_module/1_Modelos/modelo_SRTM/data")
+# shutil.rmtree("modules/Compute_module/1_Modelos/modeloERTM2160/data")
 
 # Download the Earth surface model, this model will be used for the spherical harmonics synthesis for the EGM96 model.
 # We use the model Earth2014.SUR2014.degree10800.bshc, for more information visit: https://ddfe.blazejbucha.com/models/Earth2014/data_1min/shcs_to10800
@@ -307,7 +304,7 @@ ejecutar_pipeline_srbf(
     ),
     obs_lat_col="latitude_deg",
     obs_lon_col="longitude_deg",
-    obs_alt_col="height_m",
+    obs_alt_col="h",
     puntos_aero=(
         project_root
         / "modules"
