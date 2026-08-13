@@ -94,7 +94,7 @@ def calcular_matriz_diseno_gpu(
     # Constantes precalculadas
     n = cp.arange(num_filas + 1, dtype=cp.float64)
     base = (2*n + 1)*(n+1) if para_pixeles == 0 else (2*n + 1)
-    coefs_gpu = base * Filtro(filtro, num_filas)
+    coefs_gpu = base * Filtro(filtro, num_filas + 1)
 
     # Precálculo c1 y c2
     k = np.arange(num_filas + 1)
