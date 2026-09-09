@@ -22,6 +22,27 @@
 - Visualization of the estimated residual perturbance potential and the standard deviation.
 - Visualization of the estimated Qgeoid model and the standard deviation.
 
+Below are examples of the Qgeoid model and its associated standard deviation (STD), 
+estimated for two experiments: Colorado (USA) and Medellín (Colombia).
+
+### Colorado experiment
+
+<p float="left">
+  <img src="docs/images/QgeoidCOLO2026.png" width="45%" />
+  <img src="docs/images/QgeoidCOLO2026_STD.png" width="45%" />
+</p>
+
+*Left: Estimated Qgeoid model. Right: Associated standard deviation.*
+
+### Medellín experiment
+
+<p float="left">
+  <img src="docs/images/QgeoidMEDE2026.png" width="45%" />
+  <img src="docs/images/QgeoidMEDE2026_STD.png" width="45%" />
+</p>
+
+*Left: Estimated Qgeoid model. Right: Associated standard deviation.*
+
 # Documentation
 The documentation can be found in: 
 - Theorical aspects, [docs/Qgeoid_grav_SRBF.pdf](docs/Qgeoid_grav_SRBF.pdf)
