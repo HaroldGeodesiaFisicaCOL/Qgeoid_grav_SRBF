@@ -28,8 +28,8 @@ estimated for two experiments: Colorado (USA) and Medellín (Colombia).
 ### Colorado experiment
 
 <p float="left">
-  <img src="docs/images/QgeoidCOLO2026.png" width="45%" />
-  <img src="docs/images/QgeoidCOLO2026_STD.png" width="45%" />
+  <img src="docs/imagenes/QgeoidCOLO2026.png" width="45%" />
+  <img src="docs/imagenes/QgeoidCOLO2026_STD.png" width="45%" />
 </p>
 
 *Left: Estimated Qgeoid model. Right: Associated standard deviation.*
@@ -37,8 +37,8 @@ estimated for two experiments: Colorado (USA) and Medellín (Colombia).
 ### Medellín experiment
 
 <p float="left">
-  <img src="docs/images/QgeoidMEDE2026.png" width="45%" />
-  <img src="docs/images/QgeoidMEDE2026_STD.png" width="45%" />
+  <img src="docs/imagenes/QgeoidMEDE2026.png" width="45%" />
+  <img src="docs/imagenes/QgeoidMEDE2026_STD.png" width="45%" />
 </p>
 
 *Left: Estimated Qgeoid model. Right: Associated standard deviation.*
