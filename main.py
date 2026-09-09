@@ -103,9 +103,9 @@ os.makedirs(base_local_path_zeta, exist_ok=True) # Create the local path for the
 os.makedirs(base_local_path_gravity, exist_ok=True) # Create the local path for the gravity component
 
 print('Downloading ERTM2160 geoid component...')
-# generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_zeta, base_local_path_zeta)
+generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_zeta, base_local_path_zeta)
 print('Downloading ERTM2160 gravity component...')
-# generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_gravity, base_local_path_gravity)
+generate_download_ERTM2160(lat_min, lat_max, lon_min, lon_max, base_url_gravity, base_local_path_gravity)
 
 # generate the grid model of height anomaly (m), associated with Topographic effects.
 generar_modelo_ertm2160(
@@ -114,7 +114,7 @@ generar_modelo_ertm2160(
     outputfile='modules/Compute_module/1_Modelos/modeloERTM2160/Anomalias_Altura_ERTM_2160.tif'
     )
 
-# generate the grid model of gravity disturbance (m), associated with Topographic effects.
+# generate the grid model of gravity disturbance (mGal), associated with Topographic effects.
 generar_modelo_ertm2160(
     'gravity', lon_min,lon_max, lat_min, lat_max,
     1.0, 1.0, "modules/Compute_module/1_Modelos/modeloERTM2160/data", np.nan, 'cubic',
@@ -281,7 +281,7 @@ procesamiento_aereos(
 
 project_root = Path(__file__).resolve().parent
 # Colorado model:
-lon_min, lon_max, lat_min, lat_max = -109, -103, 36, 39
+lon_min, lon_max, lat_min, lat_max = -109.00833333333334, -102.99166666666666, 35.99166666666667, 39.00833333333333
 ejecutar_pipeline_srbf(
     project_root=project_root,
 
