@@ -23,7 +23,7 @@
 - Visualization of the estimated Qgeoid model and the standard deviation.
 
 Below are examples of the Qgeoid model and its associated standard deviation (STD), 
-estimated for two experiments: Colorado (USA) and Medellín (Colombia).
+estimated for three experiments: Colorado (USA), Medellín (Colombia) and national model of Colombia.
 
 ### Colorado experiment
 
@@ -39,6 +39,13 @@ estimated for two experiments: Colorado (USA) and Medellín (Colombia).
 <p float="left">
   <img src="docs/Imagenes/QgeoidMEDE2026.png" width="45%" />
   <img src="docs/Imagenes/QgeoidMEDE2026_STD.png" width="45%" />
+</p>
+
+### Colombia experiment
+
+<p float="left">
+  <img src="docs/Imagenes/QgeoidCOL2026.png" width="45%" />
+  <img src="docs/Imagenes/QgeoidCOL2026_STD.png" width="45%" />
 </p>
 
 *Left: Estimated Qgeoid model. Right: Associated standard deviation.*
