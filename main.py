@@ -321,4 +321,6 @@ ejecutar_pipeline_srbf(
     qgeoid=True,
 
     force_mode="none",
+    si_no_terr="No",
+    si_no_aero="No",
 )
