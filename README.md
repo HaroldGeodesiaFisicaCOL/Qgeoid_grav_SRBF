@@ -5,7 +5,7 @@
 ### Download of the geopotential models 
 - Dowloand the spherical harmonics coefficients from the ICGEM website of the geopotential model in .gfc format.
 - Dowloand the spherical harmonics coefficients from the ICGEM website of the topographic gravitational effects model (dv_ell_Earth2014) in .gfc format.
-- Dowloand the grid model of the topografic gravitational effects of the model ERTM2190 in .tif format.
+- Dowloand the grid model of the topographic gravitational effects of the model ERTM2190 in .tif format.
 
 ### SRBF gravity field refinement
 - $Nmax_i$ Kernel of SRBFs expansion.
