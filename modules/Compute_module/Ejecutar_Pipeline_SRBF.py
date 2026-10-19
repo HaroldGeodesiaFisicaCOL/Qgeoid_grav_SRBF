@@ -15,7 +15,7 @@ def ejecutar_pipeline_srbf(
     apertura,
     puntos,
     puntos_aero,
-    sigma_file = None,
+    sigma_file=None,
     cases,
     restore=True,
     qgeoid=True,
@@ -27,10 +27,17 @@ def ejecutar_pipeline_srbf(
     aero_lat_col="Latitud",
     aero_lon_col="Longitud",
     aero_alt_col="Altura",
+    pixel_lat_col="Latitud",
+    pixel_lon_col="Longitud",
+    pixel_alt_col="altura",
     tam_bloque=5000,
+    kernel_block=2000,
     obs_filter="Shannon",
     aero_filter="Cup",
     pixel_filter="Cup",
+    si_no_terr=None,
+    si_no_aero=None,
+    legacy=False,
 ):
     project_root = Path(project_root).resolve()
 
@@ -39,7 +46,7 @@ def ejecutar_pipeline_srbf(
         / "modules"
         / "Compute_module"
         / "5_Main"
-        / "Pipeline_14072026.py"
+        / "Pipeline_07102026.py"
     )
 
     if not pipeline_script.exists():
@@ -85,8 +92,6 @@ def ejecutar_pipeline_srbf(
         str(puntos),
         "--puntos-aero",
         str(puntos_aero),
-        "--sigma-file",
-        str(sigma_file),
         "--cases",
         *[str(case) for case in cases],
         "--force-mode",
@@ -103,8 +108,16 @@ def ejecutar_pipeline_srbf(
         aero_lon_col,
         "--aero-alt-col",
         aero_alt_col,
+        "--pixel-lat-col",
+        pixel_lat_col,
+        "--pixel-lon-col",
+        pixel_lon_col,
+        "--pixel-alt-col",
+        pixel_alt_col,
         "--tam-bloque",
         str(tam_bloque),
+        "--kernel-block",
+        str(kernel_block),
         "--obs-filter",
         obs_filter,
         "--aero-filter",
@@ -113,20 +126,27 @@ def ejecutar_pipeline_srbf(
         pixel_filter,
     ]
 
+    # Solo se pasa si se indicó; de lo contrario el pipeline usa su valor por defecto
+    if sigma_file:
+        cmd.extend(["--sigma-file", str(sigma_file)])
+
+    if si_no_terr is not None:
+        cmd.extend(["--si-no-terr", str(si_no_terr)])
+    if si_no_aero is not None:
+        cmd.extend(["--si-no-aero", str(si_no_aero)])
+
     if force_steps:
         cmd.extend(["--force-steps", *[str(step) for step in force_steps]])
 
-    if restore:
-        cmd.append("--restore")
-    else:
-        cmd.append("--no-restore")
+    cmd.append("--restore" if restore else "--no-restore")
+    cmd.append("--qgeoid" if qgeoid else "--no-qgeoid")
 
-    if qgeoid:
-        cmd.append("--qgeoid")
-    else:
-        cmd.append("--no-qgeoid")
+    # Modo legacy: calcula la matriz de diseño de píxeles en disco (.npy).
+    # Por defecto el pipeline trabaja en modo in-situ.
+    if legacy:
+        cmd.append("--legacy")
 
-    print("\nEjecutando Pipeline_14072026.py...")
+    print("\nEjecutando Pipeline_07102026.py...")
     print(" ".join(f'"{x}"' if " " in x else x for x in cmd))
     print()
 
