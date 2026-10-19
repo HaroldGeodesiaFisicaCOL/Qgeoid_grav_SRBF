@@ -1,17 +1,17 @@
 import numpy as np
-from scipy.stats import t 
+from scipy.stats import t
 import pandas as pd
 from shapely.geometry import Point
 import geopandas as gpd
-import pygmt 
+import pygmt
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 import os
 
 def significancia_1cola(archivo_parametros,ruta_listado,archivo_varcov,archivo_estadistico_t,significancia_param):
-      
-    alpha = 0.10  
-    
+
+    alpha = 0.10
+
     # === CARGA DE DATOS ===
     parametros = np.loadtxt(archivo_parametros)  # Vector 1D
     num_parametros = parametros.shape
@@ -20,36 +20,36 @@ def significancia_1cola(archivo_parametros,ruta_listado,archivo_varcov,archivo_e
     listado = pd.read_csv(ruta_listado,sep='\t',header=None)
     numero_observaciones = np.sum([len(pd.read_csv(y,sep='\t')) for y in listado[1]])
     numero_observaciones  = int(numero_observaciones )
-    
+
     var_cov = np.load(archivo_varcov)         # Matriz cuadrada
-    var_cov = var_cov 
+    var_cov = var_cov
     grados_de_libertad = numero_observaciones - num_parametros
     # === CÁLCULOS ===
     # Errores estándar de los coeficientes
     errores_std = np.sqrt(np.diag(var_cov))
-    
+
     # Estadístico t (valor absoluto)
     t_stats = np.abs(parametros) / errores_std
-    
+
     # Valor crítico para prueba unilateral
     t_crit = t.ppf(1 - alpha, df=grados_de_libertad)
-    
+
     # Determinar significancia
     significancia = t_stats > t_crit
-    
+
     # Contar cuántos parámetros son significativos y cuántos no
     num_significativos = np.sum(significancia)
     num_no_significativos = len(significancia) - num_significativos
-    
+
     # === GUARDAR RESULTADOS ===
     # Guardar t-stats
     np.savetxt(archivo_estadistico_t, t_stats, fmt='%.6f')
-    
+
     # Guardar resultado de significancia
     with open(significancia_param, 'w') as f:
         for i, sig in enumerate(significancia):
             f.write(f'Parametro {i+1}: {"Significativo" if sig else "No significativo"}\n')
-    
+
     # === RESUMEN ===
     print("Prueba t completada (unilateral con valores absolutos).")
     print(f"- Grados de libertad: {grados_de_libertad}")
@@ -62,7 +62,7 @@ def significancia_1cola(archivo_parametros,ruta_listado,archivo_varcov,archivo_e
     print(f"   • Parámetros significativos: {num_significativos}")
     print(f"   • Parámetros no significativos: {num_no_significativos}")
     return t_stats,t_crit,parametros
-    
+
 def lectura_reuter(ruta_reuter):
     reuter = pd.read_csv(ruta_reuter, sep='\t', header=0)
     return reuter
@@ -80,11 +80,11 @@ def pandastogeopandas(df):
 def mapa_gmt(df, ruta_mapa):
     minx, miny, maxx, maxy = df.total_bounds
     region = [minx - 0.5, maxx + 0.5, miny - 0.5, maxy + 0.5]
-    
+
     t_clip_max = np.percentile(df["t_stats"], 95)
     df["t_plot"] = df["t_stats"].clip(lower=1 ,upper=t_clip_max)
-    
-    
+
+
     zmax = t_clip_max + 1e-6
 
     # Crear paleta de colores temporal
@@ -112,7 +112,7 @@ def mapa_gmt(df, ruta_mapa):
     fig.savefig(ruta_mapa+'.png')
     #fig.show()
 
-    
+
 
 def mapa_parametros(df, ruta_mapa):
     minx, miny, maxx, maxy = df.total_bounds
@@ -128,10 +128,10 @@ def mapa_parametros(df, ruta_mapa):
     #     continuous=True,
     #     output="cpt_parametros.cpt"
     # )
-    
+
     pygmt.makecpt(
         cmap="jet",
-        series=[-2e-5, 2e-5, (2e-5 + 2e-5) / 100],
+        series=[-2e-6, 2e-6, (2e-6 + 2e-6) / 100],
         truncate=[0, 1],
         continuous=True,
         output="cpt_parametros.cpt"
@@ -150,7 +150,7 @@ def mapa_parametros(df, ruta_mapa):
 
     df = df.copy()
     # df["param_clip"] = df["param"].clip(lower=zmin, upper=zmax)
-    df["param_clip"] = df["param"].clip(lower=-2e-5, upper=2e-5)
+    df["param_clip"] = df["param"].clip(lower=-2e-6, upper=2e-6)
 
     fig.plot(
         x=df["Longitud"],
@@ -195,25 +195,25 @@ def mapa_parametros_STD(df, ruta_mapa):
     fig.savefig(ruta_mapa, dpi=600)
     fig.savefig(ruta_mapa+'.png')
     #fig.show()
-    
-    
+
+
 def parametros_sign(df, t_crit, ruta_mapa):
     df_filtrado = df[df["t_stats"] >= t_crit].copy()
     t_clip_max = np.percentile(df_filtrado["t_stats"], 95)
     df_filtrado["t_plot"] = df_filtrado["t_stats"].clip(lower=t_crit ,upper=t_clip_max)
     minx, miny, maxx, maxy = df_filtrado.total_bounds
     region = [minx - 0.5, maxx + 0.5, miny - 0.5, maxy + 0.5]
- 
+
     zmin = t_crit
     zmax = t_clip_max + 1e-6
- 
+
     pygmt.makecpt(
         cmap="jet",
         series=[zmin, zmax],
         continuous=True,
         output="cpt_significativos.cpt"
     )
- 
+
     fig = pygmt.Figure()
     fig.coast(
         region=region,
@@ -224,15 +224,15 @@ def parametros_sign(df, t_crit, ruta_mapa):
         borders="1/0.5p,black",
         frame="af"
     )
- 
+
     fig.plot(
         x=df_filtrado["Longitud"],
         y=df_filtrado["Latitud"],
-        fill=df_filtrado["t_plot"],  
+        fill=df_filtrado["t_plot"],
         style="c0.05c",
         cmap="cpt_significativos.cpt"
     )
- 
+
     fig.colorbar(frame='af+lEstadístico t', cmap="cpt_significativos.cpt")
     fig.savefig(ruta_mapa, dpi=600)
     fig.savefig(ruta_mapa+'.png')
@@ -242,7 +242,7 @@ def parametros_sign(df, t_crit, ruta_mapa):
 REVISIÓN DE LAS ESTADÍSITCAS BÁSICAS DE LOS DATOS DE OBSERVACIONES TERRESTRES
 
 """
-plt.rcParams['text.usetex'] = True 
+plt.rcParams['text.usetex'] = True
 plt.rcParams['font.family'] = 'serif'
 plt.rcParams['font.serif'] = ['cm']
 plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
@@ -280,7 +280,7 @@ def estadisticos(df, columnas, labels,ruta_ploteo):
         plt.savefig(ruta_ploteo)
         print(f'Guardado: {ruta_ploteo}')
         plt.show()
-        
+
 def estadisticos2(df, columnas, labels,ruta_ploteo):
     for col, label in zip(columnas, labels):
         datos = df[col].dropna()  # Por si hay NaN
@@ -339,9 +339,9 @@ def principal(archivo_parametros,ruta_listado,archivo_varcov,archivo_estadistico
 
 if __name__ == '__main__':
     import argparse
-    
+
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument('archivo_parametros',type=str,help='Archivo txt con los parámetros')
     parser.add_argument('ruta_listado',type=str,help='Archivo txt con los el listado')
     parser.add_argument('archivo_varcov',type=str,help='Archivo de la matriz de varianza covarinaza')
@@ -354,9 +354,9 @@ if __name__ == '__main__':
     parser.add_argument('Mapa_parametros_sign_solo',type=str,help='Ruta para el mapa de los parámetros significativos solos')
     parser.add_argument('Mapa_parametros',type=str,help='Ruta para el mapa de los parámetros estimados')
     parser.add_argument('Mapa_parametros_STD',type=str,help='Ruta para el mapa de STD de los parámetros estimados')
-    
+
     args = parser.parse_args()
-    
+
     principal(archivo_parametros=args.archivo_parametros,
               ruta_listado=args.ruta_listado,
               archivo_varcov=args.archivo_varcov,
@@ -364,9 +364,8 @@ if __name__ == '__main__':
               histo_parametros =args.histo_parametros,
               histo_estadisticot = args.histo_estadisticot,
               significancia_param = args.significancia_param,
-              ruta_reuter=args.ruta_reuter, 
-              Mapa_parametros_sign=args.Mapa_parametros_sign, 
-              Mapa_parametros_sign_solo=args.Mapa_parametros_sign_solo, 
+              ruta_reuter=args.ruta_reuter,
+              Mapa_parametros_sign=args.Mapa_parametros_sign,
+              Mapa_parametros_sign_solo=args.Mapa_parametros_sign_solo,
               Mapa_parametros=args.Mapa_parametros,
               Mapa_parametros_STD=args.Mapa_parametros_STD)
-

@@ -11,14 +11,14 @@ from rasterio.crs import CRS
 def mapa_local(ruta_qgeoide_tiff,ruta_mapa_pdf):
     # Ruta al archivo GeoTIFF
     tiff_path = ruta_qgeoide_tiff  # Cambia esta ruta al archivo GeoTIFF
-    
+
     # Obtener la extensión del raster
     info = pygmt.grdinfo(tiff_path, per_column=True).split()  # Divide la salida en valores individuales
     region = [float(info[0]), float(info[1]), float(info[2]), float(info[3])]  # xmin, xmax, ymin, ymax
-    
+
     # Crear la figura
     fig = pygmt.Figure()
-    
+
     # Leer el archivo TIFF y mostrarlo con una paleta personalizada
     fig.grdimage(
         grid=tiff_path,
@@ -28,10 +28,10 @@ def mapa_local(ruta_qgeoide_tiff,ruta_mapa_pdf):
         cmap="jet",         # Paleta de colores azul-verde-amarillo-rojo
         # shading=True        # Opcional: agrega sombreado para realzar el relieve
     )
-    
+
     # Agregar la barra de colores
     fig.colorbar(frame=["a1", "x+lPotencial Perturbador", "y+lm2/s2"])
-    
+
     # Agregar líneas de delimitación de los países
     fig.coast(
         region=region,      # Asegura que la región sea la misma que el raster
@@ -39,25 +39,25 @@ def mapa_local(ruta_qgeoide_tiff,ruta_mapa_pdf):
         shorelines="1/0.5p",
         frame="af",
     )
-    
+
     # Guardar el mapa como PDF
     fig.savefig(ruta_mapa_pdf)
     fig.savefig(ruta_mapa_pdf+'.png')
-    
+
 def mapa_local_std(ruta_qgeoide_tiff, ruta_mapa_pdf):
 
     info = pygmt.grdinfo(ruta_qgeoide_tiff, per_column=True).split()
 
     region = [float(info[0]), float(info[1]),
               float(info[2]), float(info[3])]
-    
+
     zmin = float(info[4])
     zmax = float(info[5])
-    
+
     fig = pygmt.Figure()
-    
-    pygmt.makecpt(cmap="jet", series=[zmin-1e-2, zmax+1e-2])
-    
+
+    pygmt.makecpt(cmap="jet", series=[zmin-5e-2, zmax+5e-2])
+
     fig.grdimage(
         grid=ruta_qgeoide_tiff,
         region=region,
@@ -66,9 +66,9 @@ def mapa_local_std(ruta_qgeoide_tiff, ruta_mapa_pdf):
         interpolation="n",   # evita huecos por interpolación
         nan_transparent=False
     )
-    
+
     fig.colorbar(frame=["a", "x+lDesviación Estándar", "y+lm2/s2"])
-    
+
     fig.coast(
         region=region,
         borders="1/0.5p",
@@ -78,7 +78,7 @@ def mapa_local_std(ruta_qgeoide_tiff, ruta_mapa_pdf):
     fig.savefig(ruta_mapa_pdf)
     fig.savefig(ruta_mapa_pdf+'.png')
 
-    
+
 def generar_raster(df, output_filename):
     """
     Genera raster correctamente orientado:
@@ -164,7 +164,7 @@ def principal(raster_puntos_centrales,ruta_qgeoide_tiff1, ruta_mapa_pdf1,output_
 
 if __name__ == '__main__':
     import argparse
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument("ruta_raster_centrales", type=str, help="Ruta del txt del raster puntos centrales")
     parser.add_argument("ruta_qgeoide_tiff1", type=str, help="Ruta del modelo de potencial Tiff")
@@ -172,13 +172,13 @@ if __name__ == '__main__':
     parser.add_argument("output_filename", type=str, help="Ruta para raster del STD")
     parser.add_argument("pixel_size", type=float, help="Tamaño de pixel del STD del potencial")
     parser.add_argument("ruta_mapa_pdf2", type=str, help="Ruta para el mapa del STD del potencial T")
-    
+
     args = parser.parse_args()
-    
-    principal(raster_puntos_centrales=args.ruta_raster_centrales, 
-              ruta_qgeoide_tiff1=args.ruta_qgeoide_tiff1, 
-              ruta_mapa_pdf1=args.ruta_mapa_pdf1, 
-              output_filename=args.output_filename, 
-              pixel_size=args.pixel_size, 
-              ruta_qgeoide_tiff2=args.output_filename, 
+
+    principal(raster_puntos_centrales=args.ruta_raster_centrales,
+              ruta_qgeoide_tiff1=args.ruta_qgeoide_tiff1,
+              ruta_mapa_pdf1=args.ruta_mapa_pdf1,
+              output_filename=args.output_filename,
+              pixel_size=args.pixel_size,
+              ruta_qgeoide_tiff2=args.output_filename,
               ruta_mapa_pdf2=args.ruta_mapa_pdf2)
