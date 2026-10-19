@@ -40,7 +40,8 @@ DEFAULT_LAT_MIN = "3.3594065063999592"
 DEFAULT_LON_MAX = "-72.7355829984999929"
 DEFAULT_LON_MIN = "-78.4189161044999992"
 DEFAULT_APERTURA = "0.326666666666666666666666666666"
-DEFAULT_SINO = "Si"
+DEFAULT_SINO_TERR = "No"
+DEFAULT_SINO_AERO = "No"
 DEFAULT_BLOCK_SIZE = 5000
 DEFAULT_KERNEL_BLOCK = 2000
 DEFAULT_CASES = ["1VC"]
@@ -81,7 +82,8 @@ class PipelineConfig:
     lon_max: str = DEFAULT_LON_MAX
     lon_min: str = DEFAULT_LON_MIN
     apertura: str = DEFAULT_APERTURA
-    si_no: str = DEFAULT_SINO
+    si_no_terr: str = DEFAULT_SINO_TERR
+    si_no_aero: str = DEFAULT_SINO_AERO
     puntos: Path = DEFAULT_INPUTS["puntos"]
     puntos_aero: Path = DEFAULT_INPUTS["puntos_aero"]
     listado: Path = DEFAULT_INPUTS["listado"]
@@ -310,16 +312,16 @@ def crear_reporte(resumen: List[str], ruta_salida: Path):
         for linea in resumen:
             f.write(linea + "\n")
 
-def crear_listado_automatico(listado_path: Path, outputs_common: Dict[str, Path], input_paths: Dict[str, Path], si_no: str, rel_paths: bool = False):
+def crear_listado_automatico(listado_path: Path, outputs_common: Dict[str, Path], input_paths: Dict[str, Path], si_no_terr: str,si_no_aero:str, rel_paths: bool = False):
     listado_path.parent.mkdir(parents=True, exist_ok=True)
     def _fmt(p: Path):
         p = Path(p)
         return p.relative_to(BASE_DIR) if rel_paths else p.resolve()
     lines = []
     if "matriz_diseno" in outputs_common and "puntos" in input_paths:
-        lines.append(f"{_fmt(outputs_common['matriz_diseno'])}\t{_fmt(input_paths['puntos'])}\t Si")
-    if "matriz_diseno_aero" in outputs_common and "puntos_aero" in input_paths:
-        lines.append(f"{_fmt(outputs_common['matriz_diseno_aero'])}\t{_fmt(input_paths['puntos_aero'])}\t{si_no}")
+            lines.append(f"{_fmt(outputs_common['matriz_diseno'])}\t{_fmt(input_paths['puntos'])}\t{si_no_terr}")
+        if "matriz_diseno_aero" in outputs_common and "puntos_aero" in input_paths:
+            lines.append(f"{_fmt(outputs_common['matriz_diseno_aero'])}\t{_fmt(input_paths['puntos_aero'])}\t{si_no_aero}")
     with listado_path.open("w", encoding="utf-8") as f:
         for l in lines:
             f.write(l + "\n")
@@ -355,15 +357,15 @@ def construir_sigma2_init_list(listado_path: Path, use_ones: bool, sigma_file: P
             cols = line.split("\t")
             if len(cols) < 3:
                 continue
-            ruta_obs, flag = cols[1], cols[2].strip().lower()
-            df_obs = pd.read_csv(ruta_obs, sep="\t")
-            if "Proyecto" not in df_obs.columns:
-                raise ValueError(f"No existe la columna 'Proyecto' en {ruta_obs}")
-            if flag == "si":
-                for proj in df_obs["Proyecto"].unique():
-                    sigma_resultado.append("1" if use_ones else str(sigmas_map.get(proj, 1.0)))
-            else:
-                sigma_resultado.append("1")
+                ruta_obs, flag = cols[1], cols[2].strip().lower()
+                if flag == "si":
+                    df_obs = pd.read_csv(ruta_obs, sep="\t")
+                    if "Proyecto" not in df_obs.columns:
+                        raise ValueError(f"No existe la columna 'Proyecto' en {ruta_obs}")
+                    for proj in df_obs["Proyecto"].unique():
+                        sigma_resultado.append("1" if use_ones else str(sigmas_map.get(proj, 1.0)))
+                else:
+                    sigma_resultado.append("1")
     return ",".join(sigma_resultado) if sigma_resultado else "1"
 
 def build_outputs_restore_pixel() -> Dict[str, Path]:
@@ -500,11 +502,11 @@ def build_common_steps(freq: str, resol: str, lat_max: str, lat_min: str, lon_ma
         })
     return steps
 
-def run_common(freq: str, resol: str, lat_max: str, lat_min: str, lon_max: str, lon_min: str, apertura: str, si_no: str, force: bool, outputs_rp: Dict[str, Path], input_paths: Dict[str, Path], design_cols: DesignColumns, design_filters: DesignFilters, legacy: bool = False):
+def run_common(freq: str, resol: str, lat_max: str, lat_min: str, lon_max: str, lon_min: str, apertura: str, si_no_terr: str, si_no_aero, force: bool, outputs_rp: Dict[str, Path], input_paths: Dict[str, Path], design_cols: DesignColumns, design_filters: DesignFilters, legacy: bool = False):
     outputs_common = build_outputs_common(freq, legacy=legacy)
     for p in outputs_common.values():
         ensure_parent(p)
-    crear_listado_automatico(input_paths["listado"], outputs_common, input_paths, si_no, rel_paths=False)
+    crear_listado_automatico(input_paths["listado"], outputs_common, input_paths, si_no_terr, si_no_aero, rel_paths=False)
     steps = build_common_steps(freq, resol, lat_max, lat_min, lon_max, lon_min, apertura, design_cols, design_filters, outputs_common, outputs_rp, input_paths, legacy=legacy)
     resumen: List[str] = []
     for step in steps:
@@ -748,7 +750,8 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--lon-max", "--lon_max", default=DEFAULT_LON_MAX, dest="lon_max")
     parser.add_argument("--lon-min", "--lon_min", default=DEFAULT_LON_MIN, dest="lon_min")
     parser.add_argument("--apertura", "--Apertura", default=DEFAULT_APERTURA, dest="apertura")
-    parser.add_argument("--si-no", "--Sino", default=DEFAULT_SINO, dest="si_no")
+    parser.add_argument("--si-no-terr", default=DEFAULT_SINO_TERR, dest="si_no_terr")
+    parser.add_argument("--si-no-aero", default=DEFAULT_SINO_AERO, dest="si_no_aero")
     parser.add_argument("--puntos", type=Path, default=DEFAULT_INPUTS["puntos"])
     parser.add_argument("--puntos-aero", "--puntos_aero", type=Path, default=DEFAULT_INPUTS["puntos_aero"], dest="puntos_aero")
     parser.add_argument("--listado", type=Path, default=DEFAULT_INPUTS["listado"])
@@ -787,7 +790,8 @@ def build_config_from_args(args: argparse.Namespace) -> PipelineConfig:
         lon_max=str(args.lon_max),
         lon_min=str(args.lon_min),
         apertura=str(args.apertura),
-        si_no=str(args.si_no),
+        si_no_terr=str(args.si_no_terr),
+        si_no_aero=str(args.si_no_aero),
         puntos=resolve_input_path(args.puntos, "3_Observaciones"),
         puntos_aero=resolve_input_path(args.puntos_aero, "3_Observaciones"),
         listado=resolve_input_path(args.listado, "5_Main"),
@@ -848,7 +852,7 @@ def run_pipeline(config: PipelineConfig) -> None:
         reporte_global.append("===== PASO GLOBAL RESTORE_PIXEL =====")
         reporte_global.extend(resumen_global_pixel)
         reporte_global.append("")
-        outputs_common, resumen_common = run_common(freq, config.resol, config.lat_max, config.lat_min, config.lon_max, config.lon_min, config.apertura, config.si_no, should_force_step(config, "common"), restore_pixel_outputs, input_paths, config.design_cols, config.design_filters, legacy=config.legacy)
+        outputs_common, resumen_common = run_common(freq, config.resol, config.lat_max, config.lat_min, config.lon_max, config.lon_min, config.apertura, config.si_no_terr, config.si_no_aero, should_force_step(config, "common"), restore_pixel_outputs, input_paths, config.design_cols, config.design_filters, legacy=config.legacy)
         reporte_global.append("===== COMMON =====")
         reporte_global.extend(resumen_common)
         reporte_global.append("")
