@@ -80,7 +80,7 @@ print('Dowloand the Gtopo model ERTM2190...')
 # in this case we use de ERTM2160, but the SRTMv2_gravity it's a other option.
 
 #=============================================================================
-#Configuration Colorado Model, this limits the area to download for the grid model
+# Configuration Colorado Model, this limits the area to download for the grid model
 # for the topographic geopotential model
 #=============================================================================
 lat_min = 34
