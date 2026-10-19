@@ -23,6 +23,8 @@ logging.basicConfig(
 logger = logging.getLogger("pipeline_robusto")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = BASE_DIR.parent.parent  # raíz del repo (Qgeoid_grav_SRBF)
+GRAFLAB_PATH = PROJECT_ROOT / "dependencies" / "Graflab"
 
 def R(*parts) -> Path:
     return (BASE_DIR.joinpath(*parts)).resolve()
@@ -100,7 +102,7 @@ class PipelineConfig:
 scripts = {
     "reuter":         R("4_Rutinas_encerradas", "ReuterGrid.py"),
     "diseno":         R("4_Rutinas_encerradas", "Calc_puntual_optimizado_partes.py"),
-    "graflab_path":   R("4_Rutinas_encerradas"),
+    "graflab_path":   GRAFLAB_PATH,
     "graflab_expand": R("4_Rutinas_encerradas", "GravLab_expand.py"),
     "vce":            R("4_Rutinas_encerradas", "VCE06042026C.py"),
     "pixeles":        R("4_Rutinas_encerradas", "generador_pixel.py"),
