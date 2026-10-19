@@ -320,7 +320,7 @@ def crear_listado_automatico(listado_path: Path, outputs_common: Dict[str, Path]
     lines = []
     if "matriz_diseno" in outputs_common and "puntos" in input_paths:
             lines.append(f"{_fmt(outputs_common['matriz_diseno'])}\t{_fmt(input_paths['puntos'])}\t{si_no_terr}")
-        if "matriz_diseno_aero" in outputs_common and "puntos_aero" in input_paths:
+    if "matriz_diseno_aero" in outputs_common and "puntos_aero" in input_paths:
             lines.append(f"{_fmt(outputs_common['matriz_diseno_aero'])}\t{_fmt(input_paths['puntos_aero'])}\t{si_no_aero}")
     with listado_path.open("w", encoding="utf-8") as f:
         for l in lines:
