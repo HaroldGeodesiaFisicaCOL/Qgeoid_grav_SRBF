@@ -532,7 +532,7 @@ def run_shared_vce(freq: str, use_ones: bool, sigma_file: Path, input_paths: Dic
         logger.info(msg)
         return shared_outputs, [msg]
     sigma2_init_list = construir_sigma2_init_list(input_paths["listado"], use_ones, sigma_file)
-    vce_args = ["--rutas_archivo", str(input_paths["listado"]), "--sigma2_init_list", sigma2_init_list, "--sigma_mu2_init", "1.0", "--max_iter", "50", "--tol", "1e-11", "--num_trace_samples", "1", "--output_beta", str(shared_outputs["param_est"]), "--output_weights", str(shared_outputs["pesos"]), "--output_residuales", str(shared_outputs["residuos"]), "--output_normas", str(shared_outputs["normas"])]
+    vce_args = ["--rutas_archivo", str(input_paths["listado"]), "--sigma2_init_list", sigma2_init_list, "--sigma_mu2_init", "1.0", "--max_iter", "8", "--tol", "1e-11", "--num_trace_samples", "1", "--output_beta", str(shared_outputs["param_est"]), "--output_weights", str(shared_outputs["pesos"]), "--output_residuales", str(shared_outputs["residuos"]), "--output_normas", str(shared_outputs["normas"])]
     if boolCov:
         vce_args.extend(["--output_covariance", str(shared_outputs["vce_cov"])])
     rc, out = run_subprocess_capture(scripts["vce"], f"VCE_shared_{tag}", vce_args)
