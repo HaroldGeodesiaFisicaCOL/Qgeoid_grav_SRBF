@@ -40,6 +40,7 @@ estimated for three experiments: Colorado (USA), Medellín (Colombia) and nation
   <img src="docs/Imagenes/QgeoidMEDE2026.png" width="45%" />
   <img src="docs/Imagenes/QgeoidMEDE2026_STD.png" width="45%" />
 </p>
+*Left: Estimated Qgeoid model. Right: Associated standard deviation.*
 
 ### Colombia experiment
 
