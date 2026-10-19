@@ -248,6 +248,9 @@ def run_subprocess_capture(script: Path, descripcion: str, args: List[str], env=
     script = Path(script)
     args = [str(a) for a in args]
     cmd = [sys.executable, "-u", str(script), *args]
+    if env is None:
+            env = os.environ.copy()
+    env.setdefault("PYTHONIOENCODING", "utf-8")
     cmd_len = sum(len(x) + 1 for x in cmd)
     should_use_runpy = allow_runpy_if_long and platform.system().lower().startswith("win") and cmd_len > 7000
     if should_use_runpy:
@@ -284,7 +287,7 @@ def run_subprocess_capture(script: Path, descripcion: str, args: List[str], env=
             os.chdir(old_cwd)
     logger.info(f"Ejecutando subprocess: {descripcion}")
     try:
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True, env=env)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True, encoding="utf-8", errors="replace", env=env)
         out_lines: List[str] = []
         for line in proc.stdout:
             if line:
@@ -359,15 +362,16 @@ def construir_sigma2_init_list(listado_path: Path, use_ones: bool, sigma_file: P
             cols = line.split("\t")
             if len(cols) < 3:
                 continue
-                ruta_obs, flag = cols[1], cols[2].strip().lower()
-                if flag == "si":
-                    df_obs = pd.read_csv(ruta_obs, sep="\t")
-                    if "Proyecto" not in df_obs.columns:
-                        raise ValueError(f"No existe la columna 'Proyecto' en {ruta_obs}")
-                    for proj in df_obs["Proyecto"].unique():
-                        sigma_resultado.append("1" if use_ones else str(sigmas_map.get(proj, 1.0)))
-                else:
-                    sigma_resultado.append("1")
+            ruta_obs, flag = cols[1], cols[2].strip().lower()
+            if flag == "si":
+                df_obs = pd.read_csv(ruta_obs, sep="\t")
+                if "Proyecto" not in df_obs.columns:
+                    raise ValueError(f"No existe la columna 'Proyecto' en {ruta_obs}")
+                for proj in df_obs["Proyecto"].unique():
+                    sigma_resultado.append("1" if use_ones else str(sigmas_map.get(proj, 1.0)))
+            else:
+                sigma_resultado.append("1")
+    print(f"[DEBUG] sigma2_init_list = {sigma_resultado}")
     return ",".join(sigma_resultado) if sigma_resultado else "1"
 
 def build_outputs_restore_pixel() -> Dict[str, Path]:
